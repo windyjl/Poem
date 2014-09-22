@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>诗</title>
+	<link rel="stylesheet" type="text/css" href="css/alpha.css" />
+	<script type = "text/javascript" src = "js/jquery-1.8.3.min.js"> </script>
+	<script type = "text/javascript" src = "js/jquery.transit.js"> </script>
+	<script type = "text/javascript" src = "js/Alpha.js"> </script>
+	<script type = "text/javascript" src = "js/Scene.js"> </script>
+	<script type = "text/javascript" src = "js/Avatar.js"> </script>
+	</head>
+	<body>
+		<canvas id = "bg" class="screen-size">您的浏览器不支持HTML5</br>请安装更新版本的浏览器</br>推荐使用GoogleChrome 26.0以上</canvas>
+		<!-- <div id = "testdiv" style="position: fixed; width: 50%; height:  50%; background-color: #66CCFF; z-index: 1760; background-image: url(Image/ace.jpg)"></canvas> -->
+		<div id = 'fish-area'> </div>
+		<!-- <canvas id = 'test' style="position: fixed ;top: 0;left: 0; z-index: 9999; background-color: #66CCFF" width="400" height="225">测试用canvas</canvas> -->
+		<script type="text/javascript">
+		var version = navigator.appVersion.substr(0,3);
+		version = parseInt(version);
+		global.isH5suport = true;
+		if(version<5){
+			alert('您的浏览器不支持本应用');
+			global.isH5suport = false;
+		}
+		function browserInfo(){
+			//输出浏览器信息
+			console.log('浏览器信息');
+			console.log('CPU等级：'+navigator.cpuClassd);
+			console.log('浏览器名称：'+navigator.appName);
+			console.log('浏览器版本：'+navigator.appVersion);
+			console.log('语言环境：'+navigator.language);
+			console.log('运行平台：'+navigator.platform)
+		}
+		browserInfo();
+		// console.log(FPS);
+		</script>
+	</body>
+</html>
