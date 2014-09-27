@@ -50,7 +50,7 @@ Avatar.prototype.init   = function(){
     });
     this.width = this.jq.width();
     this.height = this.jq.height();
-    this.jq.appendTo($("body"));
+    this.jq.appendTo($("#divwindow"));
 
     // jq = document.createElement('div');
     this.jq.object = this;

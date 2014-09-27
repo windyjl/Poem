@@ -19,10 +19,13 @@ Scene.prototype.init    = function(){
         div.addClass("unselectable");
         //div.css("backgroundColor","rgb(0,0,0)");
         div.css({
-            position:"relative",
-            top:300
+            position:"absolute",
+            top:100
         });
         div.appendTo($("body"));  
+        div.css({
+            left:(global.SCREEN_WIDTH - div.width())/2
+        })
         this.ColorPoint[i].div = div;
         div.hide();
     };
@@ -67,7 +70,7 @@ Block.prototype.init    = function(){
         height:this.height+"px",
         position:"fixed"
     });
-    this.jq.appendTo($("body"));
+    this.jq.appendTo($("#divwindow"));
     this.jq.object = this;
     this.jq[0].object = this;
     this.locateCSS();
@@ -89,11 +92,11 @@ function showPoem(){
     if (index == global.poemPointBre) return;
     if (index>=0) {
         var div = scene.ColorPoint[index].div;
-        div.show(1000);
+        div.fadeIn(1000);
     };
     if (global.poemPointBre>=0) {
         var divPre = scene.ColorPoint[global.poemPointBre].div;
-        divPre.hide(400);  
+        divPre.fadeOut(400);  
     };
 }
 function checkPoemPoint(){

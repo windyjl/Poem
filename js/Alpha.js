@@ -41,15 +41,13 @@ var global = {
     chosingBlockWidth0:null,
     chosingBlockHeight0:null
 };
-global.isMouseDown      = false;
+global.isMouseDown  = false;
 global.isDblClick   = true;
-global.canRun     = true;
+global.canRun       = true;
 global.isMousemovable    = true;
-global.SCREEN_WIDTH = innerWidth;
-global.SCREEN_HEIGHT= innerHeight;
-global.sdc = {
-    scale: [0.8, 0.7, 0.6, 0.5, 0.4]//图层间相对移动的缩放
-};
+global.SCREEN_WIDTH = 1024;
+global.SCREEN_HEIGHT= 768;
+global.divwindow    = null;
 //测试变量
 global.timecount    = 0;//new Date().getTime();//记录上一次鼠标点击时的时间
 global.updatetimes  = 0;
@@ -83,6 +81,14 @@ $(document).ready(function(){
 });
 //初始化使用界面
 function init(){
+    global.divwindow = $("<div id='divwindow'></div>");
+    global.divwindow.css({
+        height:global.SCREEN_HEIGHT,
+        width:global.SCREEN_WIDTH,
+        position:"fixed",
+        overflow:"hidden"
+    });
+    global.divwindow.appendTo($("body"));  
     //new Block(200,200,1000,50);
     // initFNobject();
     //初始化各种设定参数
@@ -188,10 +194,11 @@ var initUI = function(){
     global.ctxBG = canvas.getContext('2d');
     global.bufferCanvas.width = global.SCREEN_WIDTH;
     global.bufferCanvas.height = global.SCREEN_HEIGHT;
-    $.each($('canvas.screen-size').get(),function(){
+    $.each($('canvas').get(),function(){
         this.width = global.SCREEN_WIDTH;
         this.height = global.SCREEN_HEIGHT;
     });
+    $('canvas').css({position:"fixed"});
     drawbg();
     tBtn("新建方块",function(){new Block(0,global.BlockList.length*50,100,20)});
     tBtn("记录方块",function(){
@@ -705,12 +712,13 @@ var resetTouchPos = function(e)
 };
 //窗口大小调整
 var windowResize = function(e){
+    return;
     var canvas = $id("bg");
     var scaleX = innerWidth/global.SCREEN_WIDTH;
     var scaleY = innerHeight/global.SCREEN_HEIGHT; 
     global.SCREEN_HEIGHT = innerHeight;
     global.SCREEN_WIDTH = innerWidth;
-    $.each($('canvas.screen-size').get(),function(){
+    $.each($('canvas').get(),function(){
         this.width = global.SCREEN_WIDTH;
         this.height = global.SCREEN_HEIGHT;
     })
