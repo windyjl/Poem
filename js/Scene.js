@@ -13,11 +13,36 @@ Scene.prototype.init    = function(){
     for (var i = 0; i < this.level.length; i++) {
         new Block(this.level[i][0],this.level[i][1],this.level[i][2],this.level[i][3]);
     };
+    //初始化剧情点
+    for (var i = 0; i < this.ColorPoint.length; i++) {
+        var div = $("<div class='poemtext'>"+this.ColorPoint[i].ps+"</div>");
+        div.addClass("unselectable");
+        //div.css("backgroundColor","rgb(0,0,0)");
+        div.css({
+            position:"relative",
+            top:300
+        });
+        div.appendTo($("body"));  
+        this.ColorPoint[i].div = div;
+        div.hide();
+    };
+    // var div = $(".poemtext");
+    // if (div.length==0) {
+    //     div = $("<div class='poemtext'>/div>");
+    //     div.addClass("unselectable");
+    //     //div.css("backgroundColor","rgb(0,0,0)");
+    //     div.css({
+    //         position:"relative",
+    //         top:300
+    //     });
+    //     div.appendTo($("body"));  
+    // }
 }
 //静态成员变量
 Scene.prototype.id = 0;
 Scene.prototype.ColorPoint = 
-[{x:200,width:200,hue:0,ps:"草泥马奶子"},{x:400,width:200,hue:0,ps:"野凤不亡，欲火还阳。 </br>涅磐避事，圣世空翔。 </br>凤兮凤兮，唯能呈祥？ </br>孤龙泣血，难挽狂澜。 </br>尘怨未了，忍顾仰望。 </br>雾笼铁幕，假戏皮相。 </br>剑已出鞘，戰鳳脫繮。 </br>洞析天下，青天一闯。 </br>"}]
+[{div:null,x:200,width:200,hue:0,ps:"草泥马奶子"},
+{div:null,x:400,width:200,hue:0,ps:"野凤不亡，欲火还阳。 </br>涅磐避事，圣世空翔。 </br>凤兮凤兮，唯能呈祥？ </br>孤龙泣血，难挽狂澜。 </br>尘怨未了，忍顾仰望。 </br>雾笼铁幕，假戏皮相。 </br>剑已出鞘，戰鳳脫繮。 </br>洞析天下，青天一闯。 </br>"}]
 Scene.prototype.level = [
 [0,0,1925,50],
 [0,50,25,695],
@@ -62,30 +87,14 @@ Block.prototype.id = 0;
 function showPoem(){
     var index = global.poemPoint;
     if (index == global.poemPointBre) return;
-    var text="";
-    // 此处应该写for
-    if (index != -1) {
-        text = scene.ColorPoint[index].ps;
-    }
-    var div = $(".poemtext");
-    if (div.length==0) {
-        div = $("<div class='poemtext'>/div>");
-        div.addClass("unselectable");
-        //div.css("backgroundColor","rgb(0,0,0)");
-        div.css({
-            position:"relative",
-            top:300
-        });
-        div.appendTo($("body"));  
-    }
-    // div.hide();
-    var x = (global.SCREEN_WIDTH - div.width())/2
-    // div.offset({
-    //     left:x,
-    //     top:300
-    // })
-    div.html(text);
-    // div.show();
+    if (index>=0) {
+        var div = scene.ColorPoint[index].div;
+        div.show(1000);
+    };
+    if (global.poemPointBre>=0) {
+        var divPre = scene.ColorPoint[global.poemPointBre].div;
+        divPre.hide(400);  
+    };
 }
 function checkPoemPoint(){
     var index = -1;

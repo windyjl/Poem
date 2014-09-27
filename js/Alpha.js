@@ -83,10 +83,6 @@ $(document).ready(function(){
 });
 //初始化使用界面
 function init(){
-    //初始化各种方法对象
-    avatar = new Avatar(50,50);
-    scene = new Scene();
-    scene.init();
     //new Block(200,200,1000,50);
     // initFNobject();
     //初始化各种设定参数
@@ -97,6 +93,10 @@ function init(){
     initEvent();
     //注册需要jQuery事件帮助的CSS
     // initJqCss();
+    //初始化各种方法对象
+    avatar = new Avatar(50,50);
+    scene = new Scene();
+    scene.init();   //场景的诗影响了测试按钮的生成-position:relative
     run();
 };
 //初始化各种方法对象
