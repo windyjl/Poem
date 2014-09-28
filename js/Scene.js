@@ -68,7 +68,7 @@ Block.prototype.init    = function(){
     this.jq.css({
         width:this.width+"px",
         height:this.height+"px",
-        position:"fixed"
+        position:"absolute"
     });
     this.jq.appendTo($("#divwindow"));
     this.jq.object = this;
@@ -92,11 +92,11 @@ function showPoem(){
     if (index == global.poemPointBre) return;
     if (index>=0) {
         var div = scene.ColorPoint[index].div;
-        div.fadeIn(1000);
+        div.fadeIn({duration:1000,queue:false});
     };
     if (global.poemPointBre>=0) {
         var divPre = scene.ColorPoint[global.poemPointBre].div;
-        divPre.fadeOut(400);  
+        divPre.fadeOut({duration:400,queue:false});  
     };
 }
 function checkPoemPoint(){

@@ -46,7 +46,7 @@ Avatar.prototype.init   = function(){
         height:"50px",
         top:0,
         left:0,
-        position:"fixed"
+        position:"absolute"
     });
     this.width = this.jq.width();
     this.height = this.jq.height();
