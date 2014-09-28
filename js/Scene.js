@@ -81,6 +81,7 @@ Block.prototype.locateCSS = function(){
     cssX = this.x;
     cssY = global.SCREEN_HEIGHT - this.y - this.height;
     this.jq.offset({left:cssX,top:cssY});
+    // this.jq.offset({left:this.x,bottom:this.y});不支持bottom
 }
 //静态成员变量
 Block.prototype.id = 0;
