@@ -50,7 +50,7 @@ Avatar.prototype.init   = function(){
     });
     this.width = this.jq.width();
     this.height = this.jq.height();
-    this.jq.appendTo($("#divwindow"));
+    this.jq.appendTo($("#divmap"));
 
     // jq = document.createElement('div');
     this.jq.object = this;
@@ -82,10 +82,13 @@ Avatar.prototype.locateCSS = function(){
     // })
 
     //CSS坐标转换
+    var offset = this.jq.offset();
     var cssX,cssY;
     cssX = this.x;
     cssY = global.SCREEN_HEIGHT - this.y - this.height;
-    this.jq.offset({left:cssX,top:cssY});
+    if (cssX!=parseInt(offset.left) || cssY!=parseInt(offset.top)) {
+        this.jq.offset({left:cssX,top:cssY});
+    };
 }
 //静态成员变量
 Avatar.prototype.id = 0;

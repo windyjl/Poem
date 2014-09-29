@@ -24,13 +24,13 @@ var global = {
     //背景色变幻
     hueOffsetPre:null,
     hueChange:2,
-    poemPoint:-1,
+    poemPoint:null,     // 在之前做法中存的是index，现在将存储PoemBlock对象
     poemPointPre:null,
     //游戏数据
     gravity:-0.5,
     jumpSpeed:7.5,
     speedx:5,
-    lockStand:true,      //每次检测到，将组织横向碰撞计算下移速度
+    lockStand:true,     //每次检测到，将组织横向碰撞计算下移速度
     //操作限制
     jumpTimeLimit:2,
     jumpTime:2,
@@ -48,6 +48,7 @@ global.isMousemovable    = true;
 global.SCREEN_WIDTH = 1024;
 global.SCREEN_HEIGHT= 768;
 global.divwindow    = null;
+global.divmap       = null;
 //测试变量
 global.timecount    = 0;//new Date().getTime();//记录上一次鼠标点击时的时间
 global.updatetimes  = 0;
@@ -88,7 +89,15 @@ function init(){
         position:"fixed",
         overflow:"hidden"
     });
-    global.divwindow.appendTo($("body"));  
+    global.divwindow.appendTo($("body")); 
+    global.divmap = $("<div id='divmap'></div>");
+    global.divmap.css({
+        height:global.SCREEN_HEIGHT,
+        width:global.SCREEN_WIDTH,
+        position:"fixed",
+        overflow:"hidden"
+    });
+    global.divmap.appendTo($("body"));  
     //new Block(200,200,1000,50);
     // initFNobject();
     //初始化各种设定参数
@@ -248,23 +257,21 @@ var run = function()
     var _run = function()
     {
         global.isMousemovable = true;
-        checkPoemPoint();
-        showPoem();
+        //checkPoemPoint();
+        //showPoem();
         drawbg();
         physicalMove();
         move();
         global.ctxBG.drawImage(global.bufferCanvas,0,0);
         // runninglog();
         setTimeout(_run, 1000.0/FPS);
-        global.poemPointBre = global.poemPoint;
+        // global.poemPointBre = global.poemPoint;
         // }
     };
     setTimeout(_run, 1000.0/FPS);
 };
 var physicalMove = function()
 {
-    var groundY = global.bufferCanvas.height/2;
-    var _top = avatar.jq.offset().top;
     var multiGravity = 1;
     if (global.btnUp&&avatar.speed.y>0) {multiGravity = 0.5};
     avatar.speed.y += global.gravity*multiGravity;
@@ -277,40 +284,41 @@ var physicalMove = function()
     //物理判断
     for (var i = 0; i < global.BlockList.length; i++) {
         var _blo = global.BlockList[i];
-        var isOutOfY = false;
-        var isOutOfX = false;
-        var isStand  = avatar.y==_blo.y+_blo.height;//主角是否踩着方块
-        if (isStand && global.btnUp==false) {global.jumpTime = global.jumpTimeLimit};  //恢复跳跃机会
-        //主角在方块上方或下放
-        if (avatar.y>=_blo.y+_blo.height || avatar.y+avatar.height<_blo.y) isOutOfY = true;
-        //主角在方块左侧或右侧
-        if (avatar.x>=_blo.x+_blo.width || avatar.x+avatar.width<=_blo.x) isOutOfX=true;
-        if (avatar.x+avatar.speed.x+avatar.width>_blo.x && avatar.x+avatar.speed.x<_blo.x+_blo.width &&
-            avatar.y+avatar.speed.y+avatar.height>_blo.y && avatar.y+avatar.speed.y<_blo.y+_blo.height)
-        {
-            if (isOutOfY==false) {
-                if (avatar.speed.x>0){
-                    avatar.speed.x  = 0;
-                    avatar.x        = _blo.x-avatar.width;
-                }
-                else if (avatar.speed.x<0)
-                {
-                    avatar.speed.x  = 0;
-                    avatar.x        = _blo.x+_blo.width;   
-                }
-            };
-            if (isOutOfX==false) {
-                if (avatar.speed.y>0){
-                    avatar.speed.y  = 0;
-                    avatar.y        = _blo.y-avatar.height;
-                }
-                else if (avatar.speed.y<0)
-                {
-                    avatar.speed.y  = 0;
-                    avatar.y        = _blo.y+_blo.height;   
-                }
-            };
-        }
+        _blo.CheckCollision(avatar);
+        // var isOutOfY = false;
+        // var isOutOfX = false;
+        // var isStand  = avatar.y==_blo.y+_blo.height;//主角是否踩着方块
+        // if (isStand && global.btnUp==false) {global.jumpTime = global.jumpTimeLimit};  //恢复跳跃机会
+        // //主角在方块上方或下放
+        // if (avatar.y>=_blo.y+_blo.height || avatar.y+avatar.height<_blo.y) isOutOfY = true;
+        // //主角在方块左侧或右侧
+        // if (avatar.x>=_blo.x+_blo.width || avatar.x+avatar.width<=_blo.x) isOutOfX=true;
+        // if (avatar.x+avatar.speed.x+avatar.width>_blo.x && avatar.x+avatar.speed.x<_blo.x+_blo.width &&
+        //     avatar.y+avatar.speed.y+avatar.height>_blo.y && avatar.y+avatar.speed.y<_blo.y+_blo.height)
+        // {
+        //     if (isOutOfY==false) {
+        //         if (avatar.speed.x>0){
+        //             avatar.speed.x  = 0;
+        //             avatar.x        = _blo.x-avatar.width;
+        //         }
+        //         else if (avatar.speed.x<0)
+        //         {
+        //             avatar.speed.x  = 0;
+        //             avatar.x        = _blo.x+_blo.width;   
+        //         }
+        //     };
+        //     if (isOutOfX==false) {
+        //         if (avatar.speed.y>0){
+        //             avatar.speed.y  = 0;
+        //             avatar.y        = _blo.y-avatar.height;
+        //         }
+        //         else if (avatar.speed.y<0)
+        //         {
+        //             avatar.speed.y  = 0;
+        //             avatar.y        = _blo.y+_blo.height;   
+        //         }
+        //     };
+        // }
     };
 
     avatar.x += avatar.speed.x;
