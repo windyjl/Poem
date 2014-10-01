@@ -29,7 +29,7 @@ Scene.prototype.init    = function(){
         // this.ColorPoint[i].div = div;
         // div.hide();
         var poemData = this.ColorPoint[i];
-        new PoemBlock(poemData.x,poemData.y,poemData.width,poemData.height,poemData.ps);
+        new PoemBlock(poemData.x,poemData.y,poemData.width,poemData.height,poemData.hue,poemData.ps);
     };
     // var div = $(".poemtext");
     // if (div.length==0) {
@@ -46,8 +46,8 @@ Scene.prototype.init    = function(){
 //静态成员变量
 Scene.prototype.id = 0;
 Scene.prototype.ColorPoint = 
-[{div:null,x:200,y:25,width:50,height:25,hue:0,ps:"草泥马奶子"},
-{div:null,x:400,y:25,width:50,height:25,hue:0,ps:"野凤不亡，欲火还阳。 </br>涅磐避事，圣世空翔。 </br>凤兮凤兮，唯能呈祥？ </br>孤龙泣血，难挽狂澜。 </br>尘怨未了，忍顾仰望。 </br>雾笼铁幕，假戏皮相。 </br>剑已出鞘，戰鳳脫繮。 </br>洞析天下，青天一闯。 </br>"}]
+[{div:null,x:200,y:50,width:50,height:25,hue:0,ps:"←→|AD移动"},
+{div:null,x:400,y:50,width:50,height:25,hue:0,ps:"↑|W跳跃</br>"}]
 Scene.prototype.level = [
 [0,0,1925,50],
 [0,50,25,695],
@@ -134,12 +134,13 @@ Block.prototype.CheckCollision = function(coliider){
 Block.prototype.id = 0;
 
 //诗方块
-function PoemBlock(x,y,width,height,ps){
+function PoemBlock(x,y,width,height,hue,ps){
     this.id             = PoemBlock.prototype.id++;
     this.x              = x;
     this.y              = y;
     this.width          = width;
     this.height         = height;
+    this.hue            = hue;
     this.ps             = ps;
     this.jq             = null;
     this.init();
@@ -192,10 +193,19 @@ PoemBlock.prototype.CheckCollision = function(collider){
     //         index = i;
     // };
     // global.poemPoint = index;
+    if (global.poemPointIndex) {return};
+
     if (collider.x+collider.width>=this.x && collider.x<=this.x+this.width &&
     collider.y+collider.height>=this.y && collider.y<=this.y+this.height)
     {
+        global.poemPointIndex = true;           // 传出已碰撞，避免同一个点有两个poemblock导致无限切换
+        if (global.poemPoint==this) {return};//避免重复赋值
         console.log("碰到的诗句是:"+this.ps);
+        global.poemPointPre = global.poemPoint;
+        global.poemPoint = this;
+        // 显示诗句
+        this.div.css({opacity:1});
+        this.div.fadeIn({duration:1000,queue:false});
     }
 }
 //静态成员变量
@@ -204,13 +214,13 @@ PoemBlock.prototype.id = 0;
 //其他方法
 function showPoem(){
     var index = global.poemPoint;
-    if (index == global.poemPointBre) return;
+    if (index == global.poemPointPre) return;
     if (index>=0) {
         var div = scene.ColorPoint[index].div;
         div.fadeIn({duration:1000,queue:false});
     };
-    if (global.poemPointBre>=0) {
-        var divPre = scene.ColorPoint[global.poemPointBre].div;
+    if (global.poemPointPre>=0) {
+        var divPre = scene.ColorPoint[global.poemPointPre].div;
         divPre.fadeOut({duration:400,queue:false});  
     };
 }

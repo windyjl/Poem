@@ -24,6 +24,8 @@ var global = {
     //背景色变幻
     hueOffsetPre:null,
     hueChange:2,
+    poemPointIndex:false,  // 每次检测前置为false，方便PoemBlock判断
+    defaultColor:240,
     poemPoint:null,     // 在之前做法中存的是index，现在将存储PoemBlock对象
     poemPointPre:null,
     //游戏数据
@@ -69,6 +71,10 @@ var KEY = {
     ESC:27,
     CTRL:17,
     SHIFT:16,
+    W:87,
+    S:83,
+    A:65,
+    D:68,
     Z:90,
     X:88,
     Y:89
@@ -282,9 +288,11 @@ var physicalMove = function()
         avatar.y        = 0;
     }
     //物理判断
+    global.poemPointIndex = false;
     for (var i = 0; i < global.BlockList.length; i++) {
         var _blo = global.BlockList[i];
         _blo.CheckCollision(avatar);
+        if (global.poemPointIndex) {break;};
         // var isOutOfY = false;
         // var isOutOfX = false;
         // var isStand  = avatar.y==_blo.y+_blo.height;//主角是否踩着方块
@@ -320,7 +328,16 @@ var physicalMove = function()
         //     };
         // }
     };
-
+    // 收尾处理，如果没有碰到poem，将poempoint置空
+    if (global.poemPointIndex==false) {
+        global.poemPointPre = global.poemPoint;
+        global.poemPoint = null;    
+        if(global.poemPointPre!=null){
+            // 隐藏
+            global.poemPointPre.div.fadeOut({duration:400,queue:false});
+        }
+    };
+    
     avatar.x += avatar.speed.x;
     avatar.y += avatar.speed.y;
     avatar.locateCSS();
@@ -423,14 +440,14 @@ var drawbg  = function(){
     var offset = 0;//渐变方向
     //此处应该写成for
 
-    var index = global.poemPoint;
+    var poemPoint = global.poemPoint;
     // for (var i = scene.ColorPoint.length - 1; i >= 0; i--) {
     //     if (avatar.x>=scene.ColorPoint[i].x && avatar.x<=scene.ColorPoint[i].x+scene.ColorPoint[i].width)
     //         index = i;
     // };
-    if (index != -1) {
+    if (poemPoint != null) {
         // 读取颜色
-        hue = scene.ColorPoint[index].hue;
+        hue = poemPoint.hue;
         // 进入颜色区域-初始化
         if (global.hueOffsetPre==null) {
             global.hueOffsetPre=0;
@@ -580,6 +597,7 @@ var bg_dblclick = function(event)
 var bg_keydown = function(event){
     //alert(event.which);
     switch(event.which){
+    case KEY.W:
     case KEY.UP:
         if (global.jumpTime>0 && global.btnUp == false){
             avatar.speed.y   = global.jumpSpeed;
@@ -588,14 +606,17 @@ var bg_keydown = function(event){
         global.btnUp    = true;
         global.dctUpOrDown = 1;
         break;
+    case KEY.S:
     case KEY.DOWN:
         global.btnDown  = true;
         global.dctUpOrDown = -1;
         break;
+    case KEY.A:
     case KEY.LEFT:
         global.btnLeft  = true;
         global.dctLeftOrRight = -1;
         break;
+    case KEY.D:
     case KEY.RIGHT:
         global.btnRight = true;
         global.dctLeftOrRight = 1;
@@ -614,6 +635,7 @@ var bg_keydown = function(event){
 var bg_keyup = function(event){
     // alert(event.which);
     switch(event.which){
+    case KEY.W:
     case KEY.UP:
         global.btnUp    = false;
         if (global.btnDown){
@@ -622,6 +644,7 @@ var bg_keyup = function(event){
             global.dctUpOrDown = 0;
         }
         break;
+    case KEY.S:
     case KEY.DOWN:
         global.btnDown  = false;
         if (global.btnUp){
@@ -630,6 +653,7 @@ var bg_keyup = function(event){
             global.dctUpOrDown = 0;
         }
         break;
+    case KEY.A:
     case KEY.LEFT:
         global.btnLeft  = false;
         if (global.btnRight){
@@ -639,6 +663,7 @@ var bg_keyup = function(event){
         }
         avatar.speed.x  = 0;
         break;
+    case KEY.D:
     case KEY.RIGHT:
         global.btnRight = false;
         if (global.btnLeft){
