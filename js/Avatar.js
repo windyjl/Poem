@@ -82,12 +82,12 @@ Avatar.prototype.locateCSS = function(){
     // })
 
     //CSS坐标转换
-    var offset = this.jq.offset();
+    var offset = this.jq.position();
     var cssX,cssY;
     cssX = this.x;
     cssY = global.SCREEN_HEIGHT - this.y - this.height;
     if (cssX!=parseInt(offset.left) || cssY!=parseInt(offset.top)) {
-        this.jq.offset({left:cssX,top:cssY});
+        this.jq.css({left:cssX,top:cssY});
     };
 }
 //静态成员变量

@@ -99,11 +99,11 @@ function init(){
     global.divmap = $("<div id='divmap'></div>");
     global.divmap.css({
         height:global.SCREEN_HEIGHT,
-        width:global.SCREEN_WIDTH,
+        // width:global.SCREEN_WIDTH,
         position:"fixed",
-        overflow:"hidden"
+        // overflow:"hidden"
     });
-    global.divmap.appendTo($("body"));  
+    global.divmap.appendTo($("#divwindow"));  
     //new Block(200,200,1000,50);
     // initFNobject();
     //初始化各种设定参数
@@ -220,7 +220,7 @@ var initUI = function(){
         console.log("正在输出当前关卡的")
         for (var i = 0; i < global.BlockList.length; i++) {
             var blk = global.BlockList[i];
-            console.log(blk.x+","+blk.y+","+blk.width+","+blk.height);
+            console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height);
         };
     });
 }
@@ -267,8 +267,9 @@ var run = function()
         //showPoem();
         drawbg();
         physicalMove();
-        move();
+        syncMapOffset();
         global.ctxBG.drawImage(global.bufferCanvas,0,0);
+        followCamera();
         // runninglog();
         setTimeout(_run, 1000.0/FPS);
         // global.poemPointBre = global.poemPoint;
@@ -276,6 +277,19 @@ var run = function()
     };
     setTimeout(_run, 1000.0/FPS);
 };
+var followCamera = function(){
+    var mapOff = 0;
+    if (avatar.x<global.SCREEN_WIDTH/2) {
+        mapOff = 0;
+    }
+    else if (avatar.x>scene.width-global.SCREEN_WIDTH/2) {
+        mapOff = scene.width-global.SCREEN_WIDTH;
+    }
+    else{
+        mapOff = avatar.x - global.SCREEN_WIDTH/2;
+    }
+    $("#divmap").css({left:-mapOff});
+}
 var physicalMove = function()
 {
     var multiGravity = 1;
@@ -493,13 +507,8 @@ var drawbg  = function(){
     ctx.fillStyle = gradient;
     ctx.fillRect (0,0,canvas.width,canvas.height);
 }
-var move = function (){
+var syncMapOffset = function (){
     if (global.isMouseDown) {};
-    // $.each(global.BlockList,function(){
-    //     this.x += 50 * global.dctLeftOrRight * -1;
-    //     this.y += 50 * global.dctUpOrDown * -1;
-    //     this.locateCSS();
-    // })
 }
 //监听事件
 var mousedown = function(e){

@@ -1,18 +1,27 @@
 /*
 以画面左下角为0,0
 */
-
 function Scene(name){
-    this.width;
-    this.height;
-	this.offx			 = 0;
-	this.offy			 = 0;
+    this.width          = 0;
+    this.height         = 0;
+	this.offx			= 0;
+	this.offy			= 0;
 }
 Scene.prototype.init    = function(){
     //生成地形
     for (var i = 0; i < this.level.length; i++) {
-        new Block(this.level[i][0],this.level[i][1],this.level[i][2],this.level[i][3]);
+        var b = new Block(this.level[i][0],this.level[i][1],this.level[i][2],this.level[i][3]);
+        if (b.x+b.width>this.width) {
+            this.width = b.x+b.width;
+        };
+        if (b.y>this.height-global.SCREEN_HEIGHT/2) {
+            this.height = b.x+global.SCREEN_HEIGHT/2;
+        };
     };
+    global.divmap.css({
+        width:this.width,
+        height:this.height
+    });
     //初始化剧情点
     for (var i = 0; i < this.ColorPoint.length; i++) {
         // var div = $("<div class='poemtext'>"+this.ColorPoint[i].ps+"</div>");
@@ -85,8 +94,8 @@ Block.prototype.locateCSS = function(){
     var cssX,cssY;
     cssX = this.x;
     cssY = global.SCREEN_HEIGHT - this.y - this.height;
-    this.jq.offset({left:cssX,top:cssY});
-    // this.jq.offset({left:this.x,bottom:this.y});不支持bottom
+    this.jq.css({left:cssX,top:cssY});
+    // this.jq.position({left:this.x,bottom:this.y});不支持bottom
 }
 Block.prototype.CheckCollision = function(coliider){
     var isOutOfY = false;
@@ -181,7 +190,7 @@ PoemBlock.prototype.locateCSS = function(){
     var cssX,cssY;
     cssX = this.x;
     cssY = global.SCREEN_HEIGHT - this.y - this.height;
-    this.jq.offset({left:cssX,top:cssY});
+    this.jq.css({left:cssX,top:cssY});
 }
 /*
     collider主动碰撞者
