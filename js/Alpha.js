@@ -9,6 +9,7 @@ var global = {
     bufferCanvas:document.createElement('canvas'),
     tempCanvas: document.createElement('canvas'),
     BlockList:[],
+    EventList:[],
     btnLeft:false,
     btnRight:false,
     btnUp:false,
@@ -41,7 +42,9 @@ var global = {
     chosingBlockX0:null,
     chosingBlockY0:null,
     chosingBlockWidth0:null,
-    chosingBlockHeight0:null
+    chosingBlockHeight0:null,
+    //全局效率控制
+    lockResetCss:false  //当设为true时，更新坐标
 };
 global.isMouseDown  = false;
 global.isDblClick   = true;
@@ -270,6 +273,7 @@ var run = function()
         syncMapOffset();
         global.ctxBG.drawImage(global.bufferCanvas,0,0);
         followCamera();
+        checkEvent();
         // runninglog();
         setTimeout(_run, 1000.0/FPS);
         // global.poemPointBre = global.poemPoint;
@@ -277,6 +281,16 @@ var run = function()
     };
     setTimeout(_run, 1000.0/FPS);
 };
+var checkEvent = function(){
+    for (var i = 0; i < global.EventList.length; i++) {
+        var _evt = global.EventList[i];
+        if (_evt.CheckEvent()){
+            _evt.isRun = true;
+            _evt.callback();
+        }
+    }
+}
+preMapOff = null;// 非正规全局变量
 var followCamera = function(){
     var mapOff = 0;
     if (avatar.x<global.SCREEN_WIDTH/2) {
@@ -288,6 +302,7 @@ var followCamera = function(){
     else{
         mapOff = avatar.x - global.SCREEN_WIDTH/2;
     }
+    if (preMapOff==mapOff) {return};
     $("#divmap").css({left:-mapOff});
 }
 var physicalMove = function()
