@@ -29,8 +29,8 @@ Scene.prototype.init    = function(){
         new PoemBlock(poemData.x,poemData.y,poemData.width,poemData.height,poemData.hue,poemData.ps);
     };
     // 初始化事件点
-    new EventBlock(true,true,600,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
-        this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:650,y:200});
+    new EventBlock(false,true,150,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
+        this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:300,y:avatar.y});
         this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
     });
 }
@@ -85,8 +85,7 @@ Block.prototype.CheckCollision = function(coliider){
     if (isStand) {
         global.jumpTime = global.jumpTimeLimit;//恢复跳跃机会
         if (global.btnUp==true) {
-            avatar.speed.y   = global.jumpSpeed;
-            global.jumpTime --;
+            avatar.ActionJump();
         };
     }
     //主角在方块上方或下放
@@ -306,7 +305,7 @@ EventBlock.prototype.reset      = function(){
     if (this.storyMode) {
         global.storyMode = false;
     };
-    if (!this.onlyOnce) {
+    if (!this.onlyOnce&&!this.isBlockActive) {
         this.isRun  = false;
     };
 }
@@ -317,12 +316,12 @@ EventBlock.prototype.CheckCollision = function(collider){
     {
         if (!this.isBlockActive) {
             this.isBlockActive = true;
-            // console.log("哎哟，我被发现了");
+            console.log("哎哟，我被发现了");
         }
     }
     else{
         this.isBlockActive = false;
-        if (!this.onlyOnce) {
+        if (!this.onlyOnce&&this.isDone) {
             this.isRun = false;
         };
     }

@@ -624,13 +624,12 @@ var bg_dblclick = function(event)
 //键盘响应
 var bg_keydown = function(event){
     //alert(event.which);
-    if (global.storyMode) {return};
+    // if (global.storyMode) {return}; //剧情时不响应
     switch(event.which){
     case KEY.W:
     case KEY.UP:
-        if (global.jumpTime>0 && global.btnUp == false){
-            avatar.speed.y   = global.jumpSpeed;
-            global.jumpTime --;
+        if (global.btnUp == false){
+            avatar.ActionJump();
         }
         global.btnUp    = true;
         global.dctUpOrDown = 1;
@@ -663,7 +662,7 @@ var bg_keydown = function(event){
 //键盘响应
 var bg_keyup = function(event){
     // alert(event.which);
-    if (global.storyMode) {return};
+    // if (global.storyMode) {return};
     switch(event.which){
     case KEY.W:
     case KEY.UP:

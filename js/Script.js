@@ -112,7 +112,10 @@ ToDoList.prototype.reset    = function(){
 ToDoList.prototype.init     = function(){
 }
 ToDoList.prototype.doTDL    = function(){
-    if (this.List.length==0) {return false};
+    if (this.List.length==0) {
+        this.isDone = true;
+        return false;
+    };
     // 检查当前TDL ITEM是否完成
     if(this.List[0].checkEnd())
         this.List.shift();    
@@ -120,7 +123,7 @@ ToDoList.prototype.doTDL    = function(){
     // 没有下一个则返回TDL完成
     if (this.List.length==0) {
     // 完成后解除TDL.isRun状态，可重复触发
-        isDone = true;
+        this.isDone = true;
         return true;
     }
     else

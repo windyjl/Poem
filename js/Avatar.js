@@ -74,7 +74,13 @@ Avatar.prototype.init   = function(){
     // $(jq).height( 200);
     // $(jq).width( 200);
 }
-
+// 操作-跳
+Avatar.prototype.ActionJump = function(){
+    if (global.jumpTime>0 && !global.storyMode){
+        this.speed.y   = global.jumpSpeed;
+        global.jumpTime --;
+    }
+}
 Avatar.prototype.locateCSS = function(){
     // $(jq).offset({
     // 	left:this.tempX - $(this.img).width()/2,
