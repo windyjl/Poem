@@ -29,7 +29,10 @@ Scene.prototype.init    = function(){
         new PoemBlock(poemData.x,poemData.y,poemData.width,poemData.height,poemData.hue,poemData.ps);
     };
     // 初始化事件点
-    new EventBlock(600,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){alert("你特么踩到我了!")} );
+    new EventBlock(true,true,600,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
+        this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:650,y:200});
+        this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
+    });
 }
 //静态成员变量
 Scene.prototype.id = 0;
@@ -204,23 +207,27 @@ PoemBlock.prototype.CheckCollision = function(collider){
 PoemBlock.prototype.id = 0;
 
 //事件方块
-function EventBlock(x,y,width,height,judgeType,judgeArg,callback){
+//单词触发？锁定操作？
+function EventBlock(onlyOnce,storyMode,x,y,width,height,judgeType,judgeArg,callback){
     this.id             = EventBlock.prototype.id++;
     this.x              = x;
     this.y              = y;
     this.width          = width;
     this.height         = height;
     this.div            = null; //$对象
-    //事件判断（方块事件）
-    this.isBlockActive       = false;
+    //事件判断（方块统计）
+    this.isBlockActive  = false;
     this.intersectTime  = 0;        // 额外，相交时间判断
     this.intersectCountType = 0;    // 额外，相交时间累积方式（单次？累积？）
     //事件判断（callback触发）
-    this.onlyOnce       = true;    // 是否单发
+    this.onlyOnce       = onlyOnce; // 是否单发
+    this.storyMode      = storyMode;// 如果为真，在触发事件时锁定场景为剧情模式，不接受键盘操作
     this.isRun          = false;    // 是否已发,脚本只激活为isRun为false的事件，onlyOnce决定了是否重置isRun
     this.judgeType      = judgeType;
     this.judgeArg       = judgeArg;
     this.callback       = callback;
+    //携带的剧本
+    this.todolist       = new ToDoList();
     this.init();
     // 方块列表
     global.BlockList.push(this);
@@ -256,24 +263,52 @@ EventBlock.prototype.JUDGETYPE = {
     LEAVE:2,    // 离开时
     LEAVEAFTER:3// 离开后一段时间
 }
-EventBlock.prototype.CheckEvent = function(){
-    if (this.isRun) {return};
+/*
+    确认事件触发条件满足
+*重置isRun的条件
+ 1·不是OnlyOnce
+ 2·
+*/
+EventBlock.prototype.checkEvent = function(){
+    if (this.isRun) {
+        if (this.todolist.isDone) {
+            this.reset();
+        };
+        return;
+    };
+    var res = false;
     switch(this.judgeType){
     case this.JUDGETYPE.GETIN:
         if (this.isBlockActive) {
-            return true;
+            res = true;
         };
         break;
     case this.JUDGETYPE.STAY:
-        return false;
+        res = false;
         break;
     case this.JUDGETYPE.LEAVE:
-        return false;
+        res = false;
         break;
     case this.JUDGETYPE.LEAVEAFTER:
-        return false;
+        res = false;
         break;
     }
+    if (res) {
+        this.isRun = true;
+        if (this.storyMode) {
+            global.storyMode = true;
+        };
+        this.callback();    //执行
+    };
+}
+EventBlock.prototype.reset      = function(){
+    this.todolist.reset();
+    if (this.storyMode) {
+        global.storyMode = false;
+    };
+    if (!this.onlyOnce) {
+        this.isRun  = false;
+    };
 }
 EventBlock.prototype.CheckCollision = function(collider){
     //
@@ -282,7 +317,7 @@ EventBlock.prototype.CheckCollision = function(collider){
     {
         if (!this.isBlockActive) {
             this.isBlockActive = true;
-            console.log("哎哟，我被发现了");
+            // console.log("哎哟，我被发现了");
         }
     }
     else{

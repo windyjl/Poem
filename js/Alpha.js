@@ -37,6 +37,7 @@ var global = {
     //操作限制
     jumpTimeLimit:2,
     jumpTime:2,
+    storyMode:false,    // 剧情事件，目前用于改变avatar的操作
     //地图编辑器信息
     chosingBlock:null,
     chosingBlockX0:null,
@@ -281,13 +282,14 @@ var run = function()
     };
     setTimeout(_run, 1000.0/FPS);
 };
+// 检查事件的触发条件，并运行事件所触发的剧本
 var checkEvent = function(){
     for (var i = 0; i < global.EventList.length; i++) {
         var _evt = global.EventList[i];
-        if (_evt.CheckEvent()){
-            _evt.isRun = true;
-            _evt.callback();
-        }
+        _evt.checkEvent();
+        if (_evt.isRun) {
+            _evt.todolist.doTDL();
+        };
     }
 }
 preMapOff = null;// 非正规全局变量
@@ -310,7 +312,9 @@ var physicalMove = function()
     var multiGravity = 1;
     if (global.btnUp&&avatar.speed.y>0) {multiGravity = 0.5};
     avatar.speed.y += global.gravity*multiGravity;
-    avatar.speed.x = global.dctLeftOrRight * global.speedx;
+    if (!global.storyMode) {
+        avatar.speed.x = global.dctLeftOrRight * global.speedx;
+    };
     if (avatar.y<0 && avatar.speed.y<0) 
     {
         avatar.speed.y  = 0;
@@ -620,6 +624,7 @@ var bg_dblclick = function(event)
 //键盘响应
 var bg_keydown = function(event){
     //alert(event.which);
+    if (global.storyMode) {return};
     switch(event.which){
     case KEY.W:
     case KEY.UP:
@@ -658,6 +663,7 @@ var bg_keydown = function(event){
 //键盘响应
 var bg_keyup = function(event){
     // alert(event.which);
+    if (global.storyMode) {return};
     switch(event.which){
     case KEY.W:
     case KEY.UP:
