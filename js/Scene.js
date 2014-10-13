@@ -33,6 +33,11 @@ Scene.prototype.init    = function(){
         this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:300,y:avatar.y});
         this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
     });
+    // 初始化NPC
+    for (var i = this.npc.length - 1; i >= 0; i--) {
+        var _npc = this.npc[i];
+        new Avatar(_npc.x,_npc.y);
+    };
 }
 //静态成员变量
 Scene.prototype.id = 0;
@@ -44,6 +49,8 @@ Scene.prototype.level = [
 [0,50,25,695],
 [150,125,125,25],
 [375,225,125,25]];
+Scene.prototype.npc = 
+[{x:500,y:280}]
 //地形方块
 function Block(x,y,width,height){
     this.id             = Block.prototype.id++;
@@ -78,43 +85,43 @@ Block.prototype.locateCSS = function(){
     this.jq.css({left:cssX,top:cssY});
     // this.jq.position({left:this.x,bottom:this.y});不支持bottom
 }
-Block.prototype.CheckCollision = function(coliider){
+Block.prototype.CheckCollision = function(collider){
     var isOutOfY = false;
     var isOutOfX = false;
-    var isStand  = coliider.y==this.y+this.height;//主角是否踩着方块
-    if (isStand) {
+    var isStand  = collider.y==this.y+this.height;//主角是否踩着方块
+    if (isStand&&collider==avatar) {
         global.jumpTime = global.jumpTimeLimit;//恢复跳跃机会
         if (global.btnUp==true) {
             avatar.ActionJump();
         };
     }
     //主角在方块上方或下放
-    if (coliider.y>=this.y+this.height || coliider.y+coliider.height<this.y) isOutOfY = true;
+    if (collider.y>=this.y+this.height || collider.y+collider.height<this.y) isOutOfY = true;
     //主角在方块左侧或右侧
-    if (coliider.x>=this.x+this.width || coliider.x+coliider.width<=this.x) isOutOfX=true;
-    if (coliider.x+coliider.speed.x+coliider.width>this.x && coliider.x+coliider.speed.x<this.x+this.width &&
-        coliider.y+coliider.speed.y+coliider.height>this.y && coliider.y+coliider.speed.y<this.y+this.height)
+    if (collider.x>=this.x+this.width || collider.x+collider.width<=this.x) isOutOfX=true;
+    if (collider.x+collider.speed.x+collider.width>this.x && collider.x+collider.speed.x<this.x+this.width &&
+        collider.y+collider.speed.y+collider.height>this.y && collider.y+collider.speed.y<this.y+this.height)
     {
         if (isOutOfY==false) {
-            if (coliider.speed.x>0){
-                coliider.speed.x  = 0;
-                coliider.x        = this.x-coliider.width;
+            if (collider.speed.x>0){
+                collider.speed.x  = 0;
+                collider.x        = this.x-collider.width;
             }
-            else if (coliider.speed.x<0)
+            else if (collider.speed.x<0)
             {
-                coliider.speed.x  = 0;
-                coliider.x        = this.x+this.width;   
+                collider.speed.x  = 0;
+                collider.x        = this.x+this.width;   
             }
         };
         if (isOutOfX==false) {
-            if (coliider.speed.y>0){
-                coliider.speed.y  = 0;
-                coliider.y        = this.y-coliider.height;
+            if (collider.speed.y>0){
+                collider.speed.y  = 0;
+                collider.y        = this.y-collider.height;
             }
-            else if (coliider.speed.y<0)
+            else if (collider.speed.y<0)
             {
-                coliider.speed.y  = 0;
-                coliider.y        = this.y+this.height;   
+                collider.speed.y  = 0;
+                collider.y        = this.y+this.height;   
             }
         };
     }
@@ -135,7 +142,7 @@ function PoemBlock(x,y,width,height,hue,ps){
     this.isActive       = false;
     this.init();
     //将方块添加到全局变量中
-    global.BlockList.push(this);
+    global.PoemsList.push(this);
 }
 PoemBlock.prototype.init    = function(){
     //初始化碰撞方块显示
@@ -177,12 +184,7 @@ PoemBlock.prototype.locateCSS = function(){
     collider主动碰撞者
 */
 PoemBlock.prototype.CheckCollision = function(collider){
-    // var index = -1;
-    // for (var i = scene.ColorPoint.length - 1; i >= 0; i--) {
-    //     if (avatar.x>=scene.ColorPoint[i].x && avatar.x<=scene.ColorPoint[i].x+scene.ColorPoint[i].width)
-    //         index = i;
-    // };
-    // global.poemPoint = index;
+    if (collider!=avatar) {return};
     if (global.poemPointIndex) {return};
     // else if (this.isActive) {return};
     if (collider.x+collider.width>=this.x && collider.x<=this.x+this.width &&
@@ -330,23 +332,31 @@ EventBlock.prototype.CheckCollision = function(collider){
 //静态成员变量
 EventBlock.prototype.id = 0;
 //其他方法
-function showPoem(){
-    var index = global.poemPoint;
-    if (index == global.poemPointPre) return;
-    if (index>=0) {
-        var div = scene.ColorPoint[index].div;
-        div.fadeIn({duration:1000,queue:false});
-    };
-    if (global.poemPointPre>=0) {
-        var divPre = scene.ColorPoint[global.poemPointPre].div;
-        divPre.fadeOut({duration:400,queue:false});  
-    };
-}
-function checkPoemPoint(){
-    var index = -1;
-    for (var i = scene.ColorPoint.length - 1; i >= 0; i--) {
-        if (avatar.x>=scene.ColorPoint[i].x && avatar.x<=scene.ColorPoint[i].x+scene.ColorPoint[i].width)
-            index = i;
-    };
-    global.poemPoint = index;
+// function showPoem(){
+//     var index = global.poemPoint;
+//     if (index == global.poemPointPre) return;
+//     if (index>=0) {
+//         var div = scene.ColorPoint[index].div;
+//         div.fadeIn({duration:1000,queue:false});
+//     };
+//     if (global.poemPointPre>=0) {
+//         var divPre = scene.ColorPoint[global.poemPointPre].div;
+//         divPre.fadeOut({duration:400,queue:false});  
+//     };
+// }
+// function checkPoemPoint(){
+//     var index = -1;
+//     for (var i = scene.ColorPoint.length - 1; i >= 0; i--) {
+//         if (avatar.x>=scene.ColorPoint[i].x && avatar.x<=scene.ColorPoint[i].x+scene.ColorPoint[i].width)
+//             index = i;
+//     };
+//     global.poemPoint = index;
+// }
+function getDis(p1,p2)
+{
+    var dis;
+    var x = p1.x - p2.x;
+    var y = p1.y - p2.y;
+    dis = Math.sqrt(x*x+y*y);
+    return dis;
 }

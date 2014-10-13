@@ -8,7 +8,9 @@ var global = {
     ctxBG:null,
     bufferCanvas:document.createElement('canvas'),
     tempCanvas: document.createElement('canvas'),
+    ActorList:[],
     BlockList:[],
+    PoemsList:[],
     EventList:[],
     btnLeft:false,
     btnRight:false,
@@ -270,6 +272,7 @@ var run = function()
         //checkPoemPoint();
         //showPoem();
         drawbg();
+        runAi();
         physicalMove();
         syncMapOffset();
         global.ctxBG.drawImage(global.bufferCanvas,0,0);
@@ -282,6 +285,15 @@ var run = function()
     };
     setTimeout(_run, 1000.0/FPS);
 };
+// 运行AI
+var runAi   = function(){
+    for (var i = global.ActorList.length - 1; i >= 0; i--) {
+        var actor = global.ActorList[i];
+        if (actor!=avatar) {
+            actor.RunAi();
+        };
+    };
+}
 // 检查事件的触发条件，并运行事件所触发的剧本
 var checkEvent = function(){
     for (var i = 0; i < global.EventList.length; i++) {
@@ -310,70 +322,51 @@ var followCamera = function(){
 var physicalMove = function()
 {
     var multiGravity = 1;
+    // 玩家角色的特殊优待
     if (global.btnUp&&avatar.speed.y>0) {multiGravity = 0.5};
     avatar.speed.y += global.gravity*multiGravity;
     if (!global.storyMode) {
         avatar.speed.x = global.dctLeftOrRight * global.speedx;
     };
-    if (avatar.y<0 && avatar.speed.y<0) 
-    {
-        avatar.speed.y  = 0;
-        avatar.y        = 0;
-    }
-    //物理判断
+    //诗集检查
     global.poemPointIndex = false;
-    for (var i = 0; i < global.BlockList.length; i++) {
-        var _blo = global.BlockList[i];
-        _blo.CheckCollision(avatar);
-        if (global.poemPointIndex) {break;};
-        // var isOutOfY = false;
-        // var isOutOfX = false;
-        // var isStand  = avatar.y==_blo.y+_blo.height;//主角是否踩着方块
-        // if (isStand && global.btnUp==false) {global.jumpTime = global.jumpTimeLimit};  //恢复跳跃机会
-        // //主角在方块上方或下放
-        // if (avatar.y>=_blo.y+_blo.height || avatar.y+avatar.height<_blo.y) isOutOfY = true;
-        // //主角在方块左侧或右侧
-        // if (avatar.x>=_blo.x+_blo.width || avatar.x+avatar.width<=_blo.x) isOutOfX=true;
-        // if (avatar.x+avatar.speed.x+avatar.width>_blo.x && avatar.x+avatar.speed.x<_blo.x+_blo.width &&
-        //     avatar.y+avatar.speed.y+avatar.height>_blo.y && avatar.y+avatar.speed.y<_blo.y+_blo.height)
-        // {
-        //     if (isOutOfY==false) {
-        //         if (avatar.speed.x>0){
-        //             avatar.speed.x  = 0;
-        //             avatar.x        = _blo.x-avatar.width;
-        //         }
-        //         else if (avatar.speed.x<0)
-        //         {
-        //             avatar.speed.x  = 0;
-        //             avatar.x        = _blo.x+_blo.width;   
-        //         }
-        //     };
-        //     if (isOutOfX==false) {
-        //         if (avatar.speed.y>0){
-        //             avatar.speed.y  = 0;
-        //             avatar.y        = _blo.y-avatar.height;
-        //         }
-        //         else if (avatar.speed.y<0)
-        //         {
-        //             avatar.speed.y  = 0;
-        //             avatar.y        = _blo.y+_blo.height;   
-        //         }
-        //     };
-        // }
+    for (var i = 0; i < global.PoemsList.length; i++) {
+        var _poem = global.PoemsList[i];
+        _poem.CheckCollision(avatar);
+        if (global.poemPointIndex) {break;}
     };
-    // 收尾处理，如果没有碰到poem，将poempoint置空
-    if (global.poemPointIndex==false) {
-        global.poemPointPre = global.poemPoint;
-        global.poemPoint = null;    
-        if(global.poemPointPre!=null){
-            // 隐藏
-            global.poemPointPre.div.fadeOut({duration:400,queue:false});
+    // 正常角色碰撞处理
+    for (var j = global.ActorList.length - 1; j >= 0; j--) {
+        var actor = global.ActorList[j];
+        // 非玩家角色重力处理
+        if (actor!=avatar) {
+            actor.speed.y += global.gravity;
+        };
+        // 边界限制
+        if (actor.y<0 && actor.speed.y<0) 
+        {
+            actor.speed.y  = 0;
+            actor.y        = 0;
         }
+        //物理判断
+        for (var i = 0; i < global.BlockList.length; i++) {
+            var _blo = global.BlockList[i];
+            _blo.CheckCollision(actor);
+        };
+        // 收尾处理，如果没有碰到poem，将poempoint置空
+        if (global.poemPointIndex==false) {
+            global.poemPointPre = global.poemPoint;
+            global.poemPoint = null;    
+            if(global.poemPointPre!=null){
+                // 隐藏
+                global.poemPointPre.div.fadeOut({duration:400,queue:false});
+            }
+        };
+        // 角色按照速度移动
+        actor.x += actor.speed.x;
+        actor.y += actor.speed.y;
+        actor.locateCSS();
     };
-    
-    avatar.x += avatar.speed.x;
-    avatar.y += avatar.speed.y;
-    avatar.locateCSS();
 }
 global.runninglog = {
     lastTime:0,

@@ -37,6 +37,8 @@ function Avatar(x,y){
 		width:[]
 	};
 	this.init();
+    //将方块添加到全局变量中
+    global.ActorList.push(this);
 }
 Avatar.prototype.init   = function(){
     this.jq = $("<div id='avatar'></div>");
@@ -94,6 +96,22 @@ Avatar.prototype.locateCSS = function(){
     cssY = global.SCREEN_HEIGHT - this.y - this.height;
     if (cssX!=parseInt(offset.left) || cssY!=parseInt(offset.top)) {
         this.jq.css({left:cssX,top:cssY});
+    };
+}
+Avatar.prototype.RunAi  = function(){
+    if (getDis(avatar,this)<100) {
+        if (avatar.x<this.x) {
+            this.speed.x = 5;
+        }
+        else if (avatar.x>this.x) {
+            this.speed.x = -5;
+        };
+        if (getDis(avatar,this)<this.width) {
+            this.speed.x *= 4;
+        };
+    }
+    else if (getDis(avatar,this)>150) {
+        this.speed.x = 0;
     };
 }
 //静态成员变量
