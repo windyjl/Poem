@@ -20,7 +20,10 @@ function Avatar(x,y,imgUrl){
     this.aiType         = 1;
     this.aiProtectTime  = 0;
     this.AngryDirection = null;     // AI参数
-
+    // 灵魂
+    this.ghost          = null;     // $对象，一个表示对方真实想法的图像
+    this.gPos           = {x:0,y:0};
+    this.gStep          = 0;        // 计数器
 	// 逻辑变量
 	this.isOnAssociable = false;	// 不在指定关系层级范围内的想法 不显示
 	this.isOnScreen		= false;	// 离开屏幕范围的相符 不绘制
@@ -59,11 +62,24 @@ Avatar.prototype.init   = function(){
     this.jq.appendTo($("#divmap"));
     this.jq.object = this;
     this.jq[0].object = this;
-
+    // 角色图像
     if (this.imgUrl!=null) {
         this.jq.css({ "background-image":"url("+this.imgUrl+")"
                         ,"background-repeat":"round"})
     };
+    // 角色灵魂
+    this.ghost = $("<div class='ghost'></div>");
+    this.ghost.css("backgroundColor","rgba(255,255,255,0.2)");
+    this.ghost.css({
+        width:"50px",
+        height:"50px",
+        top:0,
+        left:0,
+        position:"absolute"
+    });
+    this.gPos.x = this.x;
+    this.gPos.y = this.y;
+    this.ghost.appendTo(this.jq);
     // this.img = $("<img></img>");
     // this.img.addClass("unselectable");
     // this.img.css({
@@ -115,6 +131,13 @@ Avatar.prototype.locateCSS = function(){
     if (cssX!=parseInt(offset.left) || cssY!=parseInt(offset.top)) {
         this.jq.css({left:cssX,top:cssY});
     };
+    var rad = this.gStep%120/60*Math.PI;
+    var radius = 30;
+    this.gStep++;
+    this.gPos.x = Math.cos(rad)*radius;
+    this.gPos.y = Math.sin(rad)*radius - 50;
+    this.ghost.css({left:this.gPos.x,top:this.gPos.y});
+
 }
 Avatar.prototype.RunAi  = function() {
     if (this.aiProtectTime>0) {
@@ -138,7 +161,7 @@ Avatar.prototype.RunAi  = function() {
             this.movespeed.x = 0;
         };
     }
-    else if (this.aiType==1 && global.flag.itemID==0) {
+    else if (this.aiType==1) {
         if (getDis(avatar,this)<200&&this.AngryDirection==null) {
             this.AngryDirection = Math.PI/4+Math.random()*Math.PI/2;
         }
@@ -152,7 +175,7 @@ Avatar.prototype.RunAi  = function() {
                 this.movespeed.x = 4;
             };
             var dis = getDis(avatar,this);
-            if (dis<150) {
+            if (Math.abs(avatar.x-this.x)<150) {
                 this.movespeed.x = 0;
             }
             else if (dis<400) {
