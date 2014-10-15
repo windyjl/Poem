@@ -34,10 +34,10 @@ Scene.prototype.init    = function(){
         this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
     });
     // 初始化NPC
-    for (var i = this.npc.length - 1; i >= 0; i--) {
-        var _npc = this.npc[i];
-        new Avatar(_npc.x,_npc.y);
-    };
+    // for (var i = this.npc.length - 1; i >= 0; i--) {
+    //     var _npc = this.npc[i];
+    //     new Avatar(_npc.x,_npc.y);
+    // };
 }
 //静态成员变量
 Scene.prototype.id = 0;
@@ -89,27 +89,34 @@ Block.prototype.CheckCollision = function(collider){
     var isOutOfY = false;
     var isOutOfX = false;
     var isStand  = collider.y==this.y+this.height;//主角是否踩着方块
-    if (isStand&&collider==avatar) {
-        global.jumpTime = global.jumpTimeLimit;//恢复跳跃机会
-        if (global.btnUp==true) {
-            avatar.ActionJump();
-        };
+    if (isStand) {
+        if (collider==avatar) {
+            global.jumpTime = global.jumpTimeLimit;//恢复跳跃机会
+            if (global.btnUp==true) {
+                avatar.ActionJump();
+            };
+        }
+        else if (collider.speed.y<0){
+            collider.speed.x = 0;
+        }
     }
     //主角在方块上方或下放
     if (collider.y>=this.y+this.height || collider.y+collider.height<this.y) isOutOfY = true;
     //主角在方块左侧或右侧
     if (collider.x>=this.x+this.width || collider.x+collider.width<=this.x) isOutOfX=true;
-    if (collider.x+collider.speed.x+collider.width>this.x && collider.x+collider.speed.x<this.x+this.width &&
+    if (collider.x+collider.speed.x+collider.movespeed.x+collider.width>this.x && collider.x+collider.speed.x+collider.movespeed.x<this.x+this.width &&
         collider.y+collider.speed.y+collider.height>this.y && collider.y+collider.speed.y<this.y+this.height)
     {
         if (isOutOfY==false) {
-            if (collider.speed.x>0){
-                collider.speed.x  = 0;
+            if (collider.speed.x+collider.movespeed.x>0){
+                collider.speed.x        = 0;
+                collider.movespeed.x    = 0;
                 collider.x        = this.x-collider.width;
             }
-            else if (collider.speed.x<0)
+            else if (collider.speed.x+collider.movespeed.x<0)
             {
-                collider.speed.x  = 0;
+                collider.speed.x        = 0;
+                collider.movespeed.x    = 0;
                 collider.x        = this.x+this.width;   
             }
         };

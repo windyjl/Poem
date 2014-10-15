@@ -324,9 +324,10 @@ var physicalMove = function()
     var multiGravity = 1;
     // 玩家角色的特殊优待
     if (global.btnUp&&avatar.speed.y>0) {multiGravity = 0.5};
-    avatar.speed.y += global.gravity*multiGravity;
+    if (global.chosingBlock!=avatar)
+        avatar.speed.y += global.gravity*multiGravity;
     if (!global.storyMode) {
-        avatar.speed.x = global.dctLeftOrRight * global.speedx;
+        avatar.movespeed.x = global.dctLeftOrRight * global.speedx;
     };
     //诗集检查
     global.poemPointIndex = false;
@@ -339,7 +340,7 @@ var physicalMove = function()
     for (var j = global.ActorList.length - 1; j >= 0; j--) {
         var actor = global.ActorList[j];
         // 非玩家角色重力处理
-        if (actor!=avatar) {
+        if (actor!=avatar && actor!=global.chosingBlock) {
             actor.speed.y += global.gravity;
         };
         // 边界限制
@@ -363,9 +364,15 @@ var physicalMove = function()
             }
         };
         // 角色按照速度移动
-        actor.x += actor.speed.x;
-        actor.y += actor.speed.y;
+        actor.x += actor.speed.x + actor.movespeed.x;
+        actor.y += actor.speed.y + actor.movespeed.y;
         actor.locateCSS();
+    };
+    // 人与人的接触
+    for (var i = 0; i < global.ActorList.length; i++) {
+        var actor = global.ActorList[i];
+        if (actor==avatar) {continue};
+        actor.CheckCollision(avatar);
     };
 }
 global.runninglog = {

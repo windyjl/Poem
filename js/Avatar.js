@@ -7,6 +7,7 @@ function Avatar(x,y){
     this.width;
     this.height;
     this.speed          = {x:0,y:0};
+    this.movespeed      = {x:0,y:0};    // 移动速度，区别于被打飞的speed，在接触地面时不消失
     this.power          = {x:0,y:0};
     this.img			= null;
 	this.jq			    = null;	//JQ对象
@@ -14,14 +15,16 @@ function Avatar(x,y){
 	this.touchY0		= null;
 	this.offx			= 0;
 	this.offy			= 0;
-    //转身标记
-    this.schedule       = 0;       //转身进度标识
+    // AI
+    this.aiType         = 1;
+    this.aiProtectTime  = 0;
+    this.AngryDirection = null;     // AI参数
 
-	//逻辑变量
-	this.isOnAssociable = false;	//不在指定关系层级范围内的想法 不显示
-	this.isOnScreen		= false;	//离开屏幕范围的相符 不绘制
-	this.isCompelete	= false;	//想法是否已经完成
-	this.isClick        = true;	//区别鼠标“拖动”操作和“点击”的操作
+	// 逻辑变量
+	this.isOnAssociable = false;	// 不在指定关系层级范围内的想法 不显示
+	this.isOnScreen		= false;	// 离开屏幕范围的相符 不绘制
+	this.isCompelete	= false;    // 想法是否已经完成
+	this.isClick        = true;     // 区别鼠标“拖动”操作和“点击”的操作
 	this.isMouseOver	= false;	//鼠标悬停
 	this.isDeleteable	= false;
 	
@@ -56,6 +59,7 @@ Avatar.prototype.init   = function(){
 
     // jq = document.createElement('div');
     this.jq.object = this;
+    this.jq[0].object = this;
  //    $(jq).addClass('fish');
  //    $(jq).appendTo('div#fish-area');
  //    //$(jq).css({'transition-duration':'500ms'});
@@ -98,21 +102,66 @@ Avatar.prototype.locateCSS = function(){
         this.jq.css({left:cssX,top:cssY});
     };
 }
-Avatar.prototype.RunAi  = function(){
-    if (getDis(avatar,this)<100) {
-        if (avatar.x<this.x) {
-            this.speed.x = 5;
+Avatar.prototype.RunAi  = function() {
+    if (this.aiProtectTime>0) {
+        this.aiProtectTime--;
+        return;
+    };
+
+    if (this.aiType==0) {
+        if (getDis(avatar,this)<100) {
+            if (avatar.x<this.x) {
+                this.movespeed.x = 5;
+            }
+            else if (avatar.x>this.x) {
+                this.movespeed.x = -5;
+            };
+            if (getDis(avatar,this)<this.width) {
+                this.movespeed.x *= 4;
+            };
         }
-        else if (avatar.x>this.x) {
-            this.speed.x = -5;
-        };
-        if (getDis(avatar,this)<this.width) {
-            this.speed.x *= 4;
+        else if (getDis(avatar,this)>150) {
+            this.movespeed.x = 0;
         };
     }
-    else if (getDis(avatar,this)>150) {
-        this.speed.x = 0;
+    else if (this.aiType==1) {
+        if (getDis(avatar,this)<200&&this.AngryDirection==null) {
+            this.AngryDirection = Math.PI/4+Math.random()*Math.PI/2;
+        }
+        else{
+            this.AngryDirection = null;
+            // 贱人属性，远了还会靠近
+            if (avatar.x<this.x) {
+                this.movespeed.x = -4;
+            }
+            else if (avatar.x>this.x) {
+                this.movespeed.x = 4;
+            };
+            var dis = getDis(avatar,this);
+            if (dis<150) {
+                this.movespeed.x = 0;
+            }
+            else if (dis<400) {
+                this.movespeed.x /= 2;
+            };
+
+        }
     };
+}
+Avatar.prototype.CheckCollision = function(collider){
+    if (collider.x+collider.width>=this.x && collider.x<=this.x+this.width &&
+        collider.y+collider.height>=this.y && collider.y<=this.y+this.height)
+    {
+        if (this.AngryDirection!=null) {
+            var speed = 20;
+            this.speed.x = Math.cos(this.AngryDirection)*speed;
+            this.speed.y = Math.sin(this.AngryDirection)*speed;
+            this.AngryDirection = null;
+            this.aiProtectTime  = 60;
+            this.movespeed.x    = 0;
+        };
+
+    }
 }
 //静态成员变量
 Avatar.prototype.id = 0;

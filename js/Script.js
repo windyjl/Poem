@@ -32,10 +32,10 @@ TDLItem.prototype.doItem    = function(){
     switch(this.type){
     case this.ITEM_TYPE.MOVETO_POS:
     if (this.target.x<this.itemArgu1.x) {
-        this.target.speed.x = 5;
+        this.target.movespeed.x = 5;
     }
     else if (this.target.x>this.itemArgu1.x+this.target.width) {
-        this.target.speed.x = -5;
+        this.target.movespeed.x = -5;
     }
     break;
     case this.ITEM_TYPE.MOVEBY_TIME:
@@ -55,7 +55,7 @@ TDLItem.prototype.doItem    = function(){
     case this.ITEM_TYPE.RESET_AVATAR:
     break;
     case this.ITEM_TYPE.RESET_SPEED:
-    this.target.speed = {x:0,y:0};
+    this.target.movespeed = {x:0,y:0};
     break;
     case this.ITEM_TYPE.RESET_POWER:
     break;
