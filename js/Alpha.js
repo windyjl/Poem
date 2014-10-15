@@ -24,29 +24,31 @@ var global = {
     touchY0:null,
     touchX:null,
     touchY:null,
-    //背景色变幻
+    // 背景色变幻
     hueOffsetPre:null,
     hueChange:2,
     poemPointIndex:false,  // 每次检测前置为false，方便PoemBlock判断
     defaultColor:240,
     poemPoint:null,     // 在之前做法中存的是index，现在将存储PoemBlock对象
     poemPointPre:null,
-    //游戏数据
+    // 游戏道具
+    flag:null,
+    // 游戏数据
     gravity:-0.5,
     jumpSpeed:7.5,
     speedx:5,
     lockStand:true,     //每次检测到，将组织横向碰撞计算下移速度
-    //操作限制
+    // 操作限制
     jumpTimeLimit:2,
     jumpTime:2,
     storyMode:false,    // 剧情事件，目前用于改变avatar的操作
-    //地图编辑器信息
+    // 地图编辑器信息
     chosingBlock:null,
     chosingBlockX0:null,
     chosingBlockY0:null,
     chosingBlockWidth0:null,
     chosingBlockHeight0:null,
-    //全局效率控制
+    // 全局效率控制
     lockResetCss:false  //当设为true时，更新坐标
 };
 global.isMouseDown  = false;
@@ -121,7 +123,10 @@ function init(){
     //注册需要jQuery事件帮助的CSS
     // initJqCss();
     //初始化各种方法对象
-    avatar = new Avatar(50,50);
+    avatar = new Avatar(50,50,"Image/frog.png");
+    //初始化游戏道具
+    global.flag = new ItemFlag();
+    // avatar.img.attr("src","Image/frog.png");
     scene = new Scene();
     scene.init();   //场景的诗影响了测试按钮的生成-position:relative
     run();
@@ -226,6 +231,10 @@ var initUI = function(){
         console.log("正在输出当前关卡的")
         for (var i = 0; i < global.BlockList.length; i++) {
             var blk = global.BlockList[i];
+            console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height);
+        };
+        for (var i = 0; i < global.PoemsList.length; i++) {
+            var blk = global.PoemsList[i];
             console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height);
         };
     });

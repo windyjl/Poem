@@ -1,4 +1,4 @@
-function Avatar(x,y){
+function Avatar(x,y,imgUrl){
     this.id             = Avatar.prototype.id++;
     this.x              = x || 0;
     this.y              = y || 0;
@@ -10,6 +10,7 @@ function Avatar(x,y){
     this.movespeed      = {x:0,y:0};    // 移动速度，区别于被打飞的speed，在接触地面时不消失
     this.power          = {x:0,y:0};
     this.img			= null;
+    this.imgUrl         = imgUrl;
 	this.jq			    = null;	//JQ对象
 	this.touchX0		= null;	//拖动起点坐标
 	this.touchY0		= null;
@@ -56,10 +57,23 @@ Avatar.prototype.init   = function(){
     this.width = this.jq.width();
     this.height = this.jq.height();
     this.jq.appendTo($("#divmap"));
-
-    // jq = document.createElement('div');
     this.jq.object = this;
     this.jq[0].object = this;
+
+    if (this.imgUrl!=null) {
+        this.jq.css({ "background-image":"url("+this.imgUrl+")"
+                        ,"background-repeat":"round"})
+    };
+    // this.img = $("<img></img>");
+    // this.img.addClass("unselectable");
+    // this.img.css({
+    //     width:"100%",
+    //     height:"100%",
+    //     top:0,
+    //     left:0,
+    //     position:"absolute"
+    // });
+    // this.img.appendTo(this.jq);
  //    $(jq).addClass('fish');
  //    $(jq).appendTo('div#fish-area');
  //    //$(jq).css({'transition-duration':'500ms'});
@@ -124,7 +138,7 @@ Avatar.prototype.RunAi  = function() {
             this.movespeed.x = 0;
         };
     }
-    else if (this.aiType==1) {
+    else if (this.aiType==1 && global.flag.itemID==0) {
         if (getDis(avatar,this)<200&&this.AngryDirection==null) {
             this.AngryDirection = Math.PI/4+Math.random()*Math.PI/2;
         }

@@ -33,11 +33,14 @@ Scene.prototype.init    = function(){
         this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:300,y:avatar.y});
         this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
     });
+    new EventBlock(false,true,300,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
+        global.flag.setItem(0);
+    });
     // 初始化NPC
-    // for (var i = this.npc.length - 1; i >= 0; i--) {
-    //     var _npc = this.npc[i];
-    //     new Avatar(_npc.x,_npc.y);
-    // };
+    for (var i = this.npc.length - 1; i >= 0; i--) {
+        var _npc = this.npc[i];
+        new Avatar(_npc.x,_npc.y);
+    };
 }
 //静态成员变量
 Scene.prototype.id = 0;
@@ -222,7 +225,7 @@ function EventBlock(onlyOnce,storyMode,x,y,width,height,judgeType,judgeArg,callb
     this.y              = y;
     this.width          = width;
     this.height         = height;
-    this.div            = null; //$对象
+    this.jq             = null; //$对象
     //事件判断（方块统计）
     this.isBlockActive  = false;
     this.intersectTime  = 0;        // 额外，相交时间判断
@@ -331,13 +334,44 @@ EventBlock.prototype.CheckCollision = function(collider){
     else{
         this.isBlockActive = false;
         if (!this.onlyOnce&&this.isDone) {
-            this.isRun = false;
+            this.isRun  = false;
         };
     }
     return this.isBlockActive;
 }
 //静态成员变量
 EventBlock.prototype.id = 0;
+// 道具栏
+function ItemFlag(){
+    this.itemID         = -1;
+    this.jq             = null; //$对象
+    this.init();
+}
+ItemFlag.prototype.init    = function(){
+    this.jq = $("<div id='flag'></div>");
+    this.jq.css("backgroundColor","rgb(255,255,255)");
+    this.jq.css({
+        width:"50px",
+        height:"50px",
+        top:50,
+        right:50,
+        position:"absolute"
+    });
+    this.jq.appendTo($("#divwindow"));
+    this.jq.itemNo = -1;
+
+    this.jq.object = this;
+    this.jq[0].object = this;
+}
+ItemFlag.prototype.setItem  = function(itemID){
+    this.itemID = itemID;
+    switch(itemID)
+    {
+    case 0:
+    this.jq.css({ "background-image":"url(Image/rope.png)"
+                    ,"background-repeat":"round"})
+    }
+}
 //其他方法
 // function showPoem(){
 //     var index = global.poemPoint;
