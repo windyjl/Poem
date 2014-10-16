@@ -77,6 +77,8 @@ Avatar.prototype.init   = function(){
         left:0,
         position:"absolute"
     });
+    this.ghost.hide();
+    this.gState = "peace";  // "angry"
     this.gPos.x = this.x;
     this.gPos.y = this.y;
     this.ghost.appendTo(this.jq);
@@ -131,11 +133,32 @@ Avatar.prototype.locateCSS = function(){
     if (cssX!=parseInt(offset.left) || cssY!=parseInt(offset.top)) {
         this.jq.css({left:cssX,top:cssY});
     };
+    // ghost 
+    if (global.flag.itemID==0 && this!=avatar) {
+        this.ghost.show();
+    }
+    else{
+        this.ghost.hide();
+    }
     var rad = this.gStep%120/60*Math.PI;
+    var dis = getDis(avatar,this);
+    var shake = {x:0,y:0};
+    if (this.aiType==1&&this.AngryDirection!=null) {
+        rad = this.AngryDirection;
+        if (dis<50+this.width) {
+            shake.x = parseInt(Math.random()*5);
+            shake.y = parseInt(Math.random()*5);
+        };
+    };
     var radius = 30;
+    if (dis<200 && this.gState == "angry") {
+        radius += (200 - dis)/2;
+    };
     this.gStep++;
     this.gPos.x = Math.cos(rad)*radius;
-    this.gPos.y = Math.sin(rad)*radius - 50;
+    this.gPos.y = -Math.sin(rad)*radius - 50;
+    this.gPos.x += shake.x;
+    this.gPos.y += shake.y;
     this.ghost.css({left:this.gPos.x,top:this.gPos.y});
 
 }
@@ -162,27 +185,36 @@ Avatar.prototype.RunAi  = function() {
         };
     }
     else if (this.aiType==1) {
-        if (getDis(avatar,this)<200&&this.AngryDirection==null) {
-            this.AngryDirection = Math.PI/4+Math.random()*Math.PI/2;
+        if (getDis(avatar,this)<200) {  //烟雾距离
+            if (this.gState!="angry")
+                this.ghost.css({"background-image":"url(Image/angry.png)"
+                                ,"background-repeat":"round"});
+            this.gState = "angry";
+            if (this.AngryDirection==null) {
+                this.AngryDirection = Math.PI*0.25+Math.random()*Math.PI*0.5;
+            };
         }
         else{
+            if (this.gState!="peace")
+                this.ghost.css({"background-image":"url(Image/peace.png)"
+                                ,"background-repeat":"round"});
+            this.gState = "peace";
             this.AngryDirection = null;
-            // 贱人属性，远了还会靠近
-            if (avatar.x<this.x) {
-                this.movespeed.x = -4;
-            }
-            else if (avatar.x>this.x) {
-                this.movespeed.x = 4;
-            };
-            var dis = getDis(avatar,this);
-            if (Math.abs(avatar.x-this.x)<150) {
-                this.movespeed.x = 0;
-            }
-            else if (dis<400) {
-                this.movespeed.x /= 2;
-            };
-
         }
+        // 贱人属性，远了还会靠近
+        if (avatar.x<this.x) {
+            this.movespeed.x = -4;
+        }
+        else if (avatar.x>this.x) {
+            this.movespeed.x = 4;
+        };
+        var dis = getDis(avatar,this);
+        if (Math.abs(avatar.x-this.x)<250) {    // 保持距离
+            this.movespeed.x = 0;
+        }
+        else if (dis<400) {                     // 减速距离
+            this.movespeed.x /= 2;
+        };
     };
 }
 Avatar.prototype.CheckCollision = function(collider){
@@ -190,6 +222,10 @@ Avatar.prototype.CheckCollision = function(collider){
         collider.y+collider.height>=this.y && collider.y<=this.y+this.height)
     {
         if (this.AngryDirection!=null) {
+            if (this.gState!="boom")
+                this.ghost.css({"background-image":"url(Image/boom.png)"
+                                ,"background-repeat":"round"});
+            this.gState = "boom";
             var speed = 20;
             this.speed.x = Math.cos(this.AngryDirection)*speed;
             this.speed.y = Math.sin(this.AngryDirection)*speed;
