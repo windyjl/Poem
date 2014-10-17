@@ -38,7 +38,7 @@ var global = {
     // 游戏数据
     gravity:-0.5,
     jumpSpeed:7.5,
-    speedx:5,
+    speedx:2.5,
     lockStand:true,     //每次检测到，将组织横向碰撞计算下移速度
     storySchedule:0,
     chapter:0,
@@ -138,7 +138,8 @@ function init(){
     //初始化各种方法对象
     var _lvData = levelData[global.chapter];
     avatar = new Avatar(_lvData.avatarPoint.x,_lvData.avatarPoint.y,"Image/frog.png");
-    new Bubble(50,50,25,25);
+    avatar.init();
+    // new Bubble(50,50,25,25);
     //初始化游戏道具
     global.flag = new ItemFlag();
     // avatar.img.attr("src","Image/frog.png");
@@ -334,9 +335,7 @@ var runBubble = function  () {
 var runAi   = function(){
     for (var i = global.ActorList.length - 1; i >= 0; i--) {
         var actor = global.ActorList[i];
-        if (actor!=avatar) {
-            actor.RunAi();
-        };
+        actor.RunAi();
     };
 }
 // 检查事件的触发条件，并运行事件所触发的剧本

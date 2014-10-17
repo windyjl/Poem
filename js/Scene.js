@@ -50,7 +50,8 @@ Scene.prototype.init    = function(){
     // 初始化NPC
     for (var i = _data.npc.length - 1; i >= 0; i--) {
         var _npc = _data.npc[i];
-        new Avatar(_npc.x,_npc.y);
+        var newpnc = new Avatar(_npc.x,_npc.y,_npc.imgUrl,_npc.color,_npc.ai);
+        newpnc.init();
     };
 }
 Scene.prototype.removeAll = function() {
@@ -259,7 +260,7 @@ Block.prototype.CheckCollision = function(collider){
                     avatar.ActionJump();
                 };
             }
-            else if (collider.speed.y<0){
+            else if (collider.speed.y<=0){
                 collider.speed.x = 0;
             }
         }

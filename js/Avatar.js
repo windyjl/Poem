@@ -1,9 +1,8 @@
-function Avatar(x,y,imgUrl){
+function Avatar(x,y,imgUrl,color,aiType){
     this.id             = Avatar.prototype.id++;
     this.x              = x || 0;
     this.y              = y || 0;
-    this.tempX			= 0;
-    this.tempY			= 0;
+    this.color          = color;
     this.width;
     this.height;
     this.speed          = {x:0,y:0};
@@ -17,9 +16,12 @@ function Avatar(x,y,imgUrl){
 	this.offx			= 0;
 	this.offy			= 0;
     // AI
-    this.aiType         = 1;
+    this.aiType         = aiType!=null?aiType:0;
     this.aiProtectTime  = 0;
     this.AngryDirection = null;     // AI参数
+    this.aiMoveDirection= 0;    //0不动，1向右，-1向左
+    this.aiRunChance    = 4;    // 逃离机会总数
+    this.aiPatience     = 60*5;
     // 灵魂
     this.ghost          = null;     // $对象，一个表示对方真实想法的图像
     this.gPos           = {x:0,y:0};
@@ -43,13 +45,19 @@ function Avatar(x,y,imgUrl){
 		point:[],
 		width:[]
 	};
-	this.init();
     //将方块添加到全局变量中
     global.ActorList.push(this);
 }
 Avatar.prototype.init   = function(){
     this.jq = $("<div id='avatar'></div>");
-    this.jq.css("backgroundColor","rgb(255,0,0)");
+    var color = this.color;
+    if (color==null) {
+        color = "rgb(255,0,0)"
+    };
+    if (this.imgUrl==null) {
+        this.jq.css("backgroundColor",color);
+    };
+    
     this.jq.css({
         width:"50px",
         height:"50px",
@@ -78,7 +86,9 @@ Avatar.prototype.init   = function(){
         position:"absolute"
     });
     this.ghost.hide();
-    this.gState = "peace";  // "angry"
+    if (this!=avatar) {
+        this.setExpression("peace");  // "angry"        
+    };
     this.gPos.x = this.x;
     this.gPos.y = this.y;
     this.ghost.appendTo(this.jq);
@@ -142,16 +152,16 @@ Avatar.prototype.locateCSS = function(){
         this.jq.css({left:cssX,top:cssY});
     };
     // ghost 
-    if (global.flag.itemID==0 && this!=avatar) {
-        this.ghost.show();
-    }
-    else{
-        this.ghost.hide();
-    }
+    // if (global.flag.itemID==0 && this!=avatar) {
+    //     this.ghost.show();
+    // }
+    // else{
+    //     this.ghost.hide();
+    // }
     var rad = this.gStep%120/60*Math.PI;
     var dis = getDis(avatar,this);
     var shake = {x:0,y:0};
-    if (this.aiType==1&&this.AngryDirection!=null) {
+    if (/*this.aiType==1&&*/this.AngryDirection!=null) {
         rad = this.AngryDirection;
         if (dis<50+this.width) {
             shake.x = parseInt(Math.random()*5);
@@ -175,24 +185,60 @@ Avatar.prototype.RunAi  = function() {
         this.aiProtectTime--;
         return;
     };
-
-    if (this.aiType==0) {   //远离
-        if (getDis(avatar,this)<100) {
-            if (avatar.x<this.x) {
-                this.movespeed.x = 5;
-            }
-            else if (avatar.x>this.x) {
-                this.movespeed.x = -5;
-            };
-            if (getDis(avatar,this)<this.width) {
-                this.movespeed.x *= 4;
-            };
-        }
-        else if (getDis(avatar,this)>150) {
-            this.movespeed.x = 0;
+    if (this==avatar) {
+        // 主角在热水中
+        if (global.chapter!=0) {return};
+        var _poem = getPoem("火锅已经发烫</br>不能再呆下去了</br>");
+        if (_poem.y+_poem.height>this.y) {
+            this.ActionJump();
         };
     }
-    else if (this.aiType==1) {  //跳跃
+    else if (this.aiType==0) {   // 害羞逃离，多次后跟随
+        /*
+        有限的转向次数，来回多次后不再移动
+        靠近时害羞表情抖动
+        一段时间后编程爱心
+        */
+        if (this.aiRunChance>0) {
+            // 逃跑阶段
+            if (getDis(avatar,this)<150) {
+                this.setExpression("Shame");
+                if (avatar.x<this.x) {
+                    this.movespeed.x = 1;
+                    if (this.aiMoveDirection==0||this.aiMoveDirection==-1) {
+                        this.aiRunChance --;
+                        this.aiMoveDirection = 1;
+                    };
+                }
+                else if (avatar.x>this.x) {
+                    this.movespeed.x = -1;
+                    if (this.aiMoveDirection==0||this.aiMoveDirection==1) {
+                        this.aiRunChance --;
+                        this.aiMoveDirection = -1;
+                    };
+                };
+                // if (Math.abs(avatar.x-this.x)<this.width) {
+                //     this.movespeed.x *= 4;
+                // };
+                if (getDis(avatar,this)<100) {
+                    this.movespeed.x *= 2.5;
+                };
+            }
+            else if (getDis(avatar,this)>150) {
+                this.setExpression("peace");
+                this.movespeed.x = 0;
+            };
+        }
+        else if (this.aiPatience>0) {
+            this.setExpression("Shame");
+            this.aiPatience--;
+            if (this.AngryDirection==null) {
+                this.AngryDirection = Math.PI*0.25+Math.random()*Math.PI*0.5;
+            };
+            // 去完成表情抖动
+        };
+    }
+    else if (this.aiType==1) {  //套乱
         if (getDis(avatar,this)<200) {  //烟雾距离
             this.setExpression("angry");
             if (this.AngryDirection==null) {
@@ -218,8 +264,8 @@ Avatar.prototype.RunAi  = function() {
             this.movespeed.x /= 2;
         };
     }
-    else if (this.aiType==2) {  //讽刺
-        
+    else if (this.aiType==2) {  //直接跟随
+
     };
 }
 Avatar.prototype.CheckCollision = function(collider){
@@ -243,6 +289,7 @@ Avatar.prototype.setExpression = function(ExpName) {
         this.ghost.css({"background-image":"url(Image/"+ExpName+".png)"
                         ,"background-repeat":"round"});
     this.gState = ExpName;
+    this.ghost.show();
 };
 //静态成员变量
 Avatar.prototype.id = 0;

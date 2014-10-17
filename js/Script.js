@@ -75,8 +75,8 @@ TDLItem.prototype.doItem    = function(){
     case this.ITEM_TYPE.RESET_POWER:
     break;
     case this.ITEM_TYPE.SCALETO_SIZE:
-        scaleWidthtoTargetPos(this.target,this.itemArgu1,1);
-        scaleHeighttoTargetPos(this.target,this.itemArgu1,1);
+        scaleWidthtoTargetPos(this.target,this.itemArgu1,0.5);
+        scaleHeighttoTargetPos(this.target,this.itemArgu1,0.5);
         this.target.jq.css({
             width:this.target.width,
             height:this.target.height

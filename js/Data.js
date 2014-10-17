@@ -68,6 +68,7 @@ var level1 = {
                     global.BubbleList[i].distroy();
                 };
                 var _poem = getPoem("火锅已经发烫</br>不能再呆下去了</br>");
+                avatar.setExpression("escape");
                 this.todolist.addTDL(_poem,TDLItem.prototype.ITEM_TYPE.SCALETO_SIZE,{width:_poem.width,height:_poem.height+350});
             }
         },
@@ -126,13 +127,33 @@ var level2 = {
     ,eventData:[]
     ,trapData:[]
     ,npc:[{
-        ai:2
-        ,color:"rgb(0,255,0)"
+        ai:1    // 捣乱
+        ,color:"rgb(92,254,126)"
+        ,imgUrl:null//"Image/Anger.png"
         ,x:100
         ,y:100
         ,width:50
         ,height:50
         }
+        ,{
+        ai:0    // 调戏多次后跟随
+        ,color:"rgb(241,157,188)"
+        ,imgUrl:null//"Image/Shame.png"
+        ,x:500
+        ,y:100
+        ,width:50
+        ,height:50
+        }
+        ,{
+        ai:2    // 直接跟随
+        ,color:"rgb(255,250,93)"
+        ,imgUrl:null//"Image/Excited.png"
+        ,x:900
+        ,y:100
+        ,width:50
+        ,height:50
+        }
+
     ]
 }
 var level3 = {
