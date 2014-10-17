@@ -112,6 +112,14 @@ Avatar.prototype.init   = function(){
     // $(jq).height( 200);
     // $(jq).width( 200);
 }
+Avatar.prototype.distroy = function() {
+    this.jq.remove();
+    this.ghost.remove();
+    for (var i = global.ActorList.length - 1; i >= 0; i--) {
+        if (global.ActorList[i] == this)
+            global.ActorList.splice(i,1);
+    };
+};
 // 操作-跳
 Avatar.prototype.ActionJump = function(){
     if (global.jumpTime>0 && !global.storyMode){
@@ -168,7 +176,7 @@ Avatar.prototype.RunAi  = function() {
         return;
     };
 
-    if (this.aiType==0) {
+    if (this.aiType==0) {   //远离
         if (getDis(avatar,this)<100) {
             if (avatar.x<this.x) {
                 this.movespeed.x = 5;
@@ -184,7 +192,7 @@ Avatar.prototype.RunAi  = function() {
             this.movespeed.x = 0;
         };
     }
-    else if (this.aiType==1) {
+    else if (this.aiType==1) {  //跳跃
         if (getDis(avatar,this)<200) {  //烟雾距离
             this.setExpression("angry");
             if (this.AngryDirection==null) {
@@ -209,6 +217,9 @@ Avatar.prototype.RunAi  = function() {
         else if (dis<400) {                     // 减速距离
             this.movespeed.x /= 2;
         };
+    }
+    else if (this.aiType==2) {  //讽刺
+        
     };
 }
 Avatar.prototype.CheckCollision = function(collider){

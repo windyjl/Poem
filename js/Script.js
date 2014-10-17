@@ -27,6 +27,7 @@ TDLItem.prototype.ITEM_TYPE = {
     ,RESET_AVATAR   :8
     ,RESET_SPEED    :9
     ,RESET_POWER    :10
+    ,SCALETO_SIZE   :11
 }
 TDLItem.prototype.doItem    = function(){
     this.isRun = true;
@@ -73,6 +74,15 @@ TDLItem.prototype.doItem    = function(){
     break;
     case this.ITEM_TYPE.RESET_POWER:
     break;
+    case this.ITEM_TYPE.SCALETO_SIZE:
+        scaleWidthtoTargetPos(this.target,this.itemArgu1,1);
+        scaleHeighttoTargetPos(this.target,this.itemArgu1,1);
+        this.target.jq.css({
+            width:this.target.width,
+            height:this.target.height
+        });
+        this.target.locateCSS();
+    break;
     default:
     this.isRun = false;
     }
@@ -108,6 +118,12 @@ TDLItem.prototype.checkEnd  = function(){
     if (this.isRun) {return true};
     break;
     case this.ITEM_TYPE.RESET_POWER:
+    break;
+    case this.ITEM_TYPE.SCALETO_SIZE:
+    if ((this.target.height==this.itemArgu1.height
+        &&this.target.width==this.itemArgu1.width)) {
+        return true;
+    };
     break;
     }
     return false;
@@ -170,5 +186,28 @@ moveYtoTargetPos    = function(self,target,unitDis){
     }
     else if (target.y-self.y>0) {
         self.y -= 5;
+    };
+}
+
+scaleWidthtoTargetPos    = function(self,target,unitDis){
+    if (Math.abs(self.width-target.width)<unitDis) {
+        self.width = target.width;
+    }
+    else if (target.width-self.width>0) {
+        self.width += unitDis  
+    }
+    else if (target.width-self.width<0) {
+        self.width -= unitDis;
+    };
+}
+scaleHeighttoTargetPos    = function(self,target,unitDis){
+    if (Math.abs(self.height-target.height)<unitDis) {
+        self.height = target.height;
+    }
+    else if (target.height-self.height>0) {
+        self.height += unitDis  
+    }
+    else if (target.height-self.height<0) {
+        self.height -= unitDis;
     };
 }

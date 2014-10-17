@@ -6,11 +6,13 @@ function Scene(name){
     this.height         = 0;
 	this.offx			= 0;
 	this.offy			= 0;
+    this.divTitle       = null;
 }
 Scene.prototype.init    = function(){
     //生成地形
-    for (var i = 0; i < this.level.length; i++) {
-        var b = new Block(this.level[i][0],this.level[i][1],this.level[i][2],this.level[i][3]);
+    var _data = levelData[global.chapter];
+    for (var i = 0; i < _data.level.length; i++) {
+        var b = new Block(_data.level[i][0],_data.level[i][1],_data.level[i][2],_data.level[i][3]);
         // 记录地图大小
         if (b.x+b.width>this.width) {
             this.width = b.x+b.width;
@@ -24,8 +26,8 @@ Scene.prototype.init    = function(){
         height:this.height
     });
     // 初始化剧情点
-    for (var i = 0; i < this.ColorPoint.length; i++) {
-        var poemData = this.ColorPoint[i];
+    for (var i = 0; i < _data.ColorPoint.length; i++) {
+        var poemData = _data.ColorPoint[i];
         new PoemBlock(poemData.x,poemData.y,poemData.width,poemData.height,poemData.hue,poemData.ps);
     };
     // 初始化事件点
@@ -36,118 +38,155 @@ Scene.prototype.init    = function(){
     // new EventBlock(false,true,300,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
     //     global.flag.setItem(0);
     // });
-    for (var i = this.eventData.length - 1; i >= 0; i--) {
-        var data = this.eventData[i];
+    for (var i = _data.eventData.length - 1; i >= 0; i--) {
+        var data = _data.eventData[i];
         new EventBlock(data.onlyOnce,data.storyMode,data.x,data.y,data.width,data.height,data.judgeType,data.judgeArg,data.callback,data.name);
     };
     // 初始化机关
-    for (var i = this.trapData.length - 1; i >= 0; i--) {
-        var _trap = this.trapData[i];
+    for (var i = _data.trapData.length - 1; i >= 0; i--) {
+        var _trap = _data.trapData[i];
         new Trap(_trap.x,_trap.y,_trap.width,_trap.height,_trap.name);
     };
     // 初始化NPC
-    for (var i = this.npc.length - 1; i >= 0; i--) {
-        var _npc = this.npc[i];
+    for (var i = _data.npc.length - 1; i >= 0; i--) {
+        var _npc = _data.npc[i];
         new Avatar(_npc.x,_npc.y);
     };
 }
+Scene.prototype.removeAll = function() {
+    for (var i = global.ActorList.length - 1; i >= 0; i--) {
+        var _act = global.ActorList[i];
+        _act.distroy();
+    };
+};
 Scene.prototype.nextChap = function() {
-    // body...
+     global.chapter++;
+     scene.divTitle.html("");
+     var nextFunction = function(){
+         // scene.showChapTitle("第二章</br>志同 道合",function(){
+         //    $("#curtain").fadeOut(2000);
+         //    scene.init(global.chapter);   //场景的诗影响了测试按钮的生成-position:relative
+         // });
+        window.location.href="chap"+(parseInt(global.chapter)+1)+".html"; 
+     }
+     $("#curtain").fadeIn(2000,nextFunction);
+ };
+Scene.prototype.showChapTitle = function(ChapName,callback) {
+    // 初始化诗句显示
+    if (this.divTitle==null) {
+        this.divTitle = $("<div class='poemtext'>"+ChapName+"</div>");
+    }
+    else{
+        this.divTitle.html(ChapName);
+    }
+    this.divTitle.addClass("unselectable");
+    this.divTitle.css({
+        position:"absolute",
+        top:100
+    });
+    this.divTitle.appendTo($("#curtain"));  
+    this.divTitle.css({
+        left:(global.SCREEN_WIDTH - this.divTitle.width())/2
+    });
+    this.divTitle.hide();
+    this.divTitle.fadeIn(2000,callback);
 };
 //静态成员变量
 Scene.prototype.id = 0;
-Scene.prototype.ColorPoint = [
-    {div:null,x:40,y:675,width:25,height:25,hue:0,ps:"←→|AD移动"},
-    {div:null,x:175,y:675,width:25,height:25,hue:0,ps:"↑|W跳跃"},
-    {div:null,x:25,y:25,width:750,height:75,hue:0,ps:"锅底微微发烫</br>不能再呆下去了</br>"}
-]
-Scene.prototype.level = [
-    [0,0,1375,25],
-    [0,0,25,800],
-    [25,100,400,25],
-    [775,25,600,475],
-    // [933,505,25,250],
-    [500,100,275,25],
-    [207,201,525,25],
-    [25,200,125,25],
-    [75,300,250,25],
-    [400,300,400,25],
-    [25,400,150,25],
-    [250,400,525,25],
-    [25,650,175,25]
-];
+// Scene.prototype.ColorPoint = [
+//     {div:null,x:40,y:675,width:25,height:25,hue:0,ps:"←→|AD移动"},
+//     {div:null,x:175,y:675,width:25,height:25,hue:0,ps:"↑|W跳跃"},
+//     {div:null,x:25,y:25,width:750,height:75,hue:0,ps:"锅底微微发烫</br>不能再呆下去了</br>"}
+// ]
+// Scene.prototype.level = [
+//     [0,0,1375,25],
+//     [0,0,25,800],
+//     [25,100,400,25],
+//     [775,25,600,475],
+//     // [933,505,25,250],
+//     [500,100,275,25],
+//     [207,201,525,25],
+//     [25,200,125,25],
+//     [75,300,250,25],
+//     [400,300,400,25],
+//     [25,400,150,25],
+//     [250,400,525,25],
+//     [25,650,175,25]
+// ];
 
-Scene.prototype.eventData = [
-    {
-    name:"water",
-    onlyOnce:false,
-    storyMode:false,
-    x:25,
-    y:125,
-    width:750,
-    height:325,
-    judgeType:1,//STAY,
-    judgeArg:0,
-    callback:function(){
-        var pos = [177,208,360,462,751];
-        var _x,_y,_width,_height;
-        _y = 100;
-        var res = parseInt(Math.random()*2);
-        if (res==1) {
-            var index = parseInt(Math.random()*5);
-            _x = pos[index];
-        }
-        else
-        {
-            _x = Math.random()* 750 + 25;
-        }
-        _width = 25 + Math.random()*25;
-        _height = _width;
-        new Bubble(_x,_y,_width,_height);
-        this.protectTime = 30;
-    }},
-    {
-    name:"cognition",
-    onlyOnce:true,
-    storyMode:false,
-    x:425,
-    y:100,
-    width:75,
-    height:25,
-    judgeType:0,//GETIN,
-    judgeArg:0,
-    callback:function(){
-        global.storySchedule = 1;// 进入第一个剧情点
-        var _tarp = getTrap("gate01");
-        this.todolist.addTDL(_tarp,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:_tarp.x,y:_tarp.y+_tarp.height+100});
-        for (var i = global.BubbleList.length - 1; i >= 0; i--) {
-            global.BubbleList[i].distroy();
-        };
-    }},
-    {
-    name:"chapterEnd",
-    onlyOnce:true,
-    storyMode:false,
-    x:933,
-    y:505,
-    width:75,
-    height:25,
-    judgeType:0,//GETIN,
-    judgeArg:0,
-    callback:function(){
-
-    }}
-];
-Scene.prototype.trapData =  [
-    {
-        x:933,
-        y:505,
-        width:25,
-        height:250,
-        name:"gate01"
-    }
-]
-Scene.prototype.npc = [];
+// Scene.prototype.eventData = [
+//     {
+//     name:"water",
+//     onlyOnce:false,
+//     storyMode:false,
+//     x:25,
+//     y:125,
+//     width:750,
+//     height:325,
+//     judgeType:1,//STAY,
+//     judgeArg:0,
+//     callback:function(){
+//         var pos = [177,208,360,462,751];
+//         var _x,_y,_width,_height;
+//         _y = 100;
+//         var res = parseInt(Math.random()*2);
+//         if (res==1) {
+//             var index = parseInt(Math.random()*5);
+//             _x = pos[index];
+//         }
+//         else
+//         {
+//             _x = Math.random()* 750 + 25;
+//         }
+//         _width = 25 + Math.random()*25;
+//         _height = _width;
+//         new Bubble(_x,_y,_width,_height);
+//         this.protectTime = 30;
+//     }},
+//     {
+//         name:"cognition",
+//         onlyOnce:true,
+//         storyMode:false,
+//         x:425,
+//         y:100,
+//         width:75,
+//         height:25,
+//         judgeType:0,//GETIN,
+//         judgeArg:0,
+//         callback:function(){
+//             global.storySchedule = 1;// 进入第一个剧情点
+//             var _tarp = getTrap("gate01");
+//             this.todolist.addTDL(_tarp,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:_tarp.x,y:_tarp.y+_tarp.height+100});
+//             for (var i = global.BubbleList.length - 1; i >= 0; i--) {
+//                 global.BubbleList[i].distroy();
+//             };
+//         }
+//     },
+//     {
+//         name:"chapterEnd",
+//         onlyOnce:true,
+//         storyMode:false,
+//         x:1275,
+//         y:500,
+//         width:75,
+//         height:150,
+//         judgeType:0,//GETIN,
+//         judgeArg:0,
+//         callback:function(){
+//             scene.nextChap();
+//         }
+//     }
+// ];
+// Scene.prototype.trapData =  [
+//     {
+//         x:933,
+//         y:505,
+//         width:25,
+//         height:250,
+//         name:"gate01"
+//     }
+// ]
+// Scene.prototype.npc = [];
  // [{x:500,y:280}];
 //地形方块
 function Block(x,y,width,height){
@@ -156,7 +195,7 @@ function Block(x,y,width,height){
     this.y              = y;
     this.width          = width;
     this.height         = height;
-    this.div            = null; //$对象
+    this.jq             = null; //$对象
     this.init();
     //将方块添加到全局变量中
     global.BlockList.push(this);
@@ -175,6 +214,13 @@ Block.prototype.init    = function(){
     this.jq[0].object = this;
     this.locateCSS();
 }
+Block.prototype.distroy = function() {
+    this.jq.remove();
+    for (var i = global.BlockList.length - 1; i >= 0; i--) {
+        if (global.BlockList[i] == this)
+            global.BlockList.splice(i,1);
+    };
+};
 Block.prototype.locateCSS = function(){
     //CSS坐标转换
     var cssX,cssY;
@@ -243,6 +289,7 @@ function PoemBlock(x,y,width,height,hue,ps){
     this.width          = width;
     this.height         = height;
     this.hue            = hue;      //色相
+    this.div            = null;     //诗句div
     this.ps             = ps;       //诗句
     this.jq             = null;
     this.isActive       = false;
@@ -279,6 +326,21 @@ PoemBlock.prototype.init    = function(){
     // 初始化结束
     this.locateCSS();
 }
+getPoem = function(PoemString){
+    for (var i = global.PoemsList.length - 1; i >= 0; i--) {
+        if (global.PoemsList[i].ps==PoemString)
+            return global.PoemsList[i];
+    };
+    return null;
+}
+PoemBlock.prototype.distroy = function() {
+    this.jq.remove();
+    this.div.remove();
+    for (var i = global.PoemsList.length - 1; i >= 0; i--) {
+        if (global.PoemsList[i] == this)
+            global.PoemsList.splice(i,1);
+    };
+};
 PoemBlock.prototype.locateCSS = function(){
     //CSS坐标转换
     var cssX,cssY;
@@ -357,6 +419,17 @@ EventBlock.prototype.init    = function(){
     this.jq[0].object = this;
     this.locateCSS();
 }
+EventBlock.prototype.distroy = function() {
+    this.jq.remove();
+    for (var i = global.BlockList.length - 1; i >= 0; i--) {
+        if (global.BlockList[i] == this)
+            global.BlockList.splice(i,1);
+    };
+    for (var i = global.EventList.length - 1; i >= 0; i--) {
+        if (global.EventList[i] == this)
+            global.EventList.splice(i,1);
+    };
+};
 EventBlock.prototype.locateCSS = function(){
     //CSS坐标转换
     var cssX,cssY;
@@ -516,6 +589,13 @@ Bubble.prototype.init   = function(){
     this.jq.css({ "background-image":"url(Image/Bubble.png)"
                     ,"background-repeat":"round"});
 }
+Bubble.prototype.distroy = function() {
+    this.jq.remove();
+    for (var i = global.BubbleList.length - 1; i >= 0; i--) {
+        if (global.BubbleList[i] == this)
+            global.BubbleList.splice(i,1);
+    };
+};
 Bubble.prototype.CheckCollision = function(collider){
     Block.prototype.CheckCollision.call(this,collider);
 };
@@ -576,6 +656,17 @@ Trap.prototype.init    = function(){
     this.jq[0].object = this;
     this.locateCSS();
 }
+Trap.prototype.distroy = function() {
+    this.jq.remove();
+    for (var i = global.BlockList.length - 1; i >= 0; i--) {
+        if (global.BlockList[i] == this)
+            global.BlockList.splice(i,1);
+    };
+    for (var i = global.TrapList.length - 1; i >= 0; i--) {
+        if (global.TrapList[i] == this)
+            global.TrapList.splice(i,1);
+    };
+};
 Trap.prototype.locateCSS = function(){
     //CSS坐标转换
     var cssX,cssY;

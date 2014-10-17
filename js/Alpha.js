@@ -93,6 +93,15 @@ var KEY = {
 }
 //启动的地方
 $(document).ready(function(){
+    var re = /(index|\d*?)\.html/;
+    var a = re.exec(window.location.href);
+    if (a[1]=="index") {
+        global.chapter = 0;
+    }
+    else{
+        global.chapter = a[1]-1;
+    }
+    console.log("当前关卡:"+global.chapter);
     if(!global.isH5suport){
         return;
     }
@@ -127,14 +136,20 @@ function init(){
     //注册需要jQuery事件帮助的CSS
     // initJqCss();
     //初始化各种方法对象
-    avatar = new Avatar(40,677,"Image/frog.png");
+    var _lvData = levelData[global.chapter];
+    avatar = new Avatar(_lvData.avatarPoint.x,_lvData.avatarPoint.y,"Image/frog.png");
     new Bubble(50,50,25,25);
     //初始化游戏道具
     global.flag = new ItemFlag();
     // avatar.img.attr("src","Image/frog.png");
     scene = new Scene();
-    scene.init();   //场景的诗影响了测试按钮的生成-position:relative
-    run();
+
+    // 显示第一章
+    scene.showChapTitle(levelData[global.chapter].title,function(){
+        $("#curtain").fadeOut(2000);
+        scene.init(global.chapter);   //场景的诗影响了测试按钮的生成-position:relative
+        run();
+    })
 };
 //初始化各种方法对象
 var initFNobject = function(){
@@ -219,7 +234,14 @@ var initEvent = function  () {
 }
 //初始化UI
 var initUI = function(){
-    //初始化背景
+    // 初始化幕布
+    $("#curtain").css({
+        "backgroundColor":"rgb(0,0,0)",
+        "width":global.SCREEN_WIDTH,
+        "height":global.SCREEN_HEIGHT,
+        position:"fixed",
+        "z-index":100
+    });
     //初始化背景
     var canvas = $id("bg");
     global.ctxBG = canvas.getContext('2d');
