@@ -186,19 +186,13 @@ Avatar.prototype.RunAi  = function() {
     }
     else if (this.aiType==1) {
         if (getDis(avatar,this)<200) {  //烟雾距离
-            if (this.gState!="angry")
-                this.ghost.css({"background-image":"url(Image/angry.png)"
-                                ,"background-repeat":"round"});
-            this.gState = "angry";
+            this.setExpression("angry");
             if (this.AngryDirection==null) {
                 this.AngryDirection = Math.PI*0.25+Math.random()*Math.PI*0.5;
             };
         }
         else{
-            if (this.gState!="peace")
-                this.ghost.css({"background-image":"url(Image/peace.png)"
-                                ,"background-repeat":"round"});
-            this.gState = "peace";
+            this.setExpression("peace");
             this.AngryDirection = null;
         }
         // 贱人属性，远了还会靠近
@@ -222,10 +216,7 @@ Avatar.prototype.CheckCollision = function(collider){
         collider.y+collider.height>=this.y && collider.y<=this.y+this.height)
     {
         if (this.AngryDirection!=null) {
-            if (this.gState!="boom")
-                this.ghost.css({"background-image":"url(Image/boom.png)"
-                                ,"background-repeat":"round"});
-            this.gState = "boom";
+            this.setExpression("boom");
             var speed = 20;
             this.speed.x = Math.cos(this.AngryDirection)*speed;
             this.speed.y = Math.sin(this.AngryDirection)*speed;
@@ -236,5 +227,11 @@ Avatar.prototype.CheckCollision = function(collider){
 
     }
 }
+Avatar.prototype.setExpression = function(ExpName) {
+    if (this.gState!=ExpName)
+        this.ghost.css({"background-image":"url(Image/"+ExpName+".png)"
+                        ,"background-repeat":"round"});
+    this.gState = ExpName;
+};
 //静态成员变量
 Avatar.prototype.id = 0;

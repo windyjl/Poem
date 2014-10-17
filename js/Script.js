@@ -4,6 +4,7 @@ Script.prototype.init    = function(){
 }
 
 //ToDoList机制——再现！
+//MOVETO_POS时 argu1 为{x:?,y:?}
 function TDLItem(target,type,argu1,argu2)
 {
     this.isRun      = false;    // 执行中标志，大部分指令只用执行一次。其他需要反复调整
@@ -29,13 +30,26 @@ TDLItem.prototype.ITEM_TYPE = {
 }
 TDLItem.prototype.doItem    = function(){
     this.isRun = true;
+    var targetClass = getObjectClass(this.target);
     switch(this.type){
     case this.ITEM_TYPE.MOVETO_POS:
+    var _spd = 5;
     if (this.target.x<this.itemArgu1.x) {
-        this.target.movespeed.x = 5;
+        _spd = 5;
     }
     else if (this.target.x>this.itemArgu1.x+this.target.width) {
-        this.target.movespeed.x = -5;
+        _spd = -5
+    }
+    if (targetClass=="Avatar") {
+        this.target.movespeed.x = _spd;
+    }
+    else if (targetClass=="Bubble"){
+        this.target.speed.x = _spd;
+    }
+    else {
+        moveXtoTargetPos(this.target,this.itemArgu1);
+        moveYtoTargetPos(this.target,this.itemArgu1);
+        this.target.locateCSS();
     }
     break;
     case this.ITEM_TYPE.MOVEBY_TIME:
@@ -134,4 +148,27 @@ ToDoList.prototype.doTDL    = function(){
 }
 ToDoList.prototype.addTDL   = function(target,type,argu){
     this.List.push(new TDLItem(target,type,argu));
+}
+// 重用方法
+moveXtoTargetPos    = function(self,target,unitDis){
+    if (Math.abs(self.x-target.x)<5) {
+        self.x = target.x;
+    }
+    else if (target.x-self.x<0) {
+        self.x += 5  
+    }
+    else if (target.x-self.x>0) {
+        self.x -= 5;
+    };
+}
+moveYtoTargetPos    = function(self,target,unitDis){
+    if (Math.abs(self.y-target.y)<5) {
+        self.y = target.y;
+    }
+    else if (target.y-self.y<0) {
+        self.y += 5  
+    }
+    else if (target.y-self.y>0) {
+        self.y -= 5;
+    };
 }

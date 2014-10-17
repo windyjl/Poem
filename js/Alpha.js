@@ -12,6 +12,8 @@ var global = {
     BlockList:[],
     PoemsList:[],
     EventList:[],
+    BubbleList:[],
+    TrapList:[],
     btnLeft:false,
     btnRight:false,
     btnUp:false,
@@ -38,6 +40,8 @@ var global = {
     jumpSpeed:7.5,
     speedx:5,
     lockStand:true,     //每次检测到，将组织横向碰撞计算下移速度
+    storySchedule:0,
+    chapter:0,
     // 操作限制
     jumpTimeLimit:2,
     jumpTime:2,
@@ -100,7 +104,7 @@ function init(){
     global.divwindow.css({
         height:global.SCREEN_HEIGHT,
         width:global.SCREEN_WIDTH,
-        position:"fixed",
+        position:"absolute",
         overflow:"hidden"
     });
     global.divwindow.appendTo($("body")); 
@@ -108,7 +112,7 @@ function init(){
     global.divmap.css({
         height:global.SCREEN_HEIGHT,
         // width:global.SCREEN_WIDTH,
-        position:"fixed",
+        position:"absolute",
         // overflow:"hidden"
     });
     global.divmap.appendTo($("#divwindow"));  
@@ -123,7 +127,8 @@ function init(){
     //注册需要jQuery事件帮助的CSS
     // initJqCss();
     //初始化各种方法对象
-    avatar = new Avatar(50,50,"Image/frog.png");
+    avatar = new Avatar(40,677,"Image/frog.png");
+    new Bubble(50,50,25,25);
     //初始化游戏道具
     global.flag = new ItemFlag();
     // avatar.img.attr("src","Image/frog.png");
@@ -282,6 +287,7 @@ var run = function()
         //showPoem();
         drawbg();
         runAi();
+        runBubble();    //气泡
         physicalMove();
         syncMapOffset();
         global.ctxBG.drawImage(global.bufferCanvas,0,0);
@@ -294,6 +300,14 @@ var run = function()
     };
     setTimeout(_run, 1000.0/FPS);
 };
+var runBubble = function  () {
+    if (global.storySchedule!=0) 
+        return;
+    for (var i = global.BubbleList.length - 1; i >= 0; i--) {
+        var _bbl = global.BubbleList[i];
+        _bbl.run();
+    };
+}
 // 运行AI
 var runAi   = function(){
     for (var i = global.ActorList.length - 1; i >= 0; i--) {
@@ -337,6 +351,10 @@ var physicalMove = function()
         avatar.speed.y += global.gravity*multiGravity;
     if (!global.storyMode) {
         avatar.movespeed.x = global.dctLeftOrRight * global.speedx;
+    };
+    // 人与气泡
+    for (var i = global.BubbleList.length - 1; i >= 0&& global.storySchedule==0 ; i--) {
+        global.BubbleList[i].CheckCollision(avatar);
     };
     //诗集检查
     global.poemPointIndex = false;
@@ -382,6 +400,15 @@ var physicalMove = function()
         var actor = global.ActorList[i];
         if (actor==avatar) {continue};
         actor.CheckCollision(avatar);
+    };
+    // 人物与地图边界
+    if (avatar.x<0) {
+        avatar.x = 0;
+        avatar.movespeed.x = 0;
+    }
+    else if (avatar.x+avatar.width>scene.width) {
+        avatar.x = scene.width - avatar.width;
+        avatar.movespeed.x = 0;
     };
 }
 global.runninglog = {

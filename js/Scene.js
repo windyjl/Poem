@@ -29,31 +29,126 @@ Scene.prototype.init    = function(){
         new PoemBlock(poemData.x,poemData.y,poemData.width,poemData.height,poemData.hue,poemData.ps);
     };
     // 初始化事件点
-    new EventBlock(false,true,150,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
-        this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:300,y:avatar.y});
-        this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
-    });
-    new EventBlock(false,true,300,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
-        global.flag.setItem(0);
-    });
+    // new EventBlock(false,true,150,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
+    //     this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:300,y:avatar.y});
+    //     this.todolist.addTDL(avatar,TDLItem.prototype.ITEM_TYPE.RESET_SPEED,0);
+    // });
+    // new EventBlock(false,true,300,50,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){
+    //     global.flag.setItem(0);
+    // });
+    for (var i = this.eventData.length - 1; i >= 0; i--) {
+        var data = this.eventData[i];
+        new EventBlock(data.onlyOnce,data.storyMode,data.x,data.y,data.width,data.height,data.judgeType,data.judgeArg,data.callback,data.name);
+    };
+    // 初始化机关
+    for (var i = this.trapData.length - 1; i >= 0; i--) {
+        var _trap = this.trapData[i];
+        new Trap(_trap.x,_trap.y,_trap.width,_trap.height,_trap.name);
+    };
     // 初始化NPC
     for (var i = this.npc.length - 1; i >= 0; i--) {
         var _npc = this.npc[i];
         new Avatar(_npc.x,_npc.y);
     };
 }
+Scene.prototype.nextChap = function() {
+    // body...
+};
 //静态成员变量
 Scene.prototype.id = 0;
-Scene.prototype.ColorPoint = 
-[{div:null,x:200,y:50,width:50,height:25,hue:0,ps:"←→|AD移动"},
-{div:null,x:400,y:50,width:50,height:25,hue:0,ps:"↑|W跳跃</br>"}]
+Scene.prototype.ColorPoint = [
+    {div:null,x:40,y:675,width:25,height:25,hue:0,ps:"←→|AD移动"},
+    {div:null,x:175,y:675,width:25,height:25,hue:0,ps:"↑|W跳跃"},
+    {div:null,x:25,y:25,width:750,height:75,hue:0,ps:"锅底微微发烫</br>不能再呆下去了</br>"}
+]
 Scene.prototype.level = [
-[0,0,1925,50],
-[0,50,25,695],
-[150,125,125,25],
-[375,225,125,25]];
-Scene.prototype.npc = 
-[{x:500,y:280}]
+    [0,0,1375,25],
+    [0,0,25,800],
+    [25,100,400,25],
+    [775,25,600,475],
+    // [933,505,25,250],
+    [500,100,275,25],
+    [207,201,525,25],
+    [25,200,125,25],
+    [75,300,250,25],
+    [400,300,400,25],
+    [25,400,150,25],
+    [250,400,525,25],
+    [25,650,175,25]
+];
+
+Scene.prototype.eventData = [
+    {
+    name:"water",
+    onlyOnce:false,
+    storyMode:false,
+    x:25,
+    y:125,
+    width:750,
+    height:325,
+    judgeType:1,//STAY,
+    judgeArg:0,
+    callback:function(){
+        var pos = [177,208,360,462,751];
+        var _x,_y,_width,_height;
+        _y = 100;
+        var res = parseInt(Math.random()*2);
+        if (res==1) {
+            var index = parseInt(Math.random()*5);
+            _x = pos[index];
+        }
+        else
+        {
+            _x = Math.random()* 750 + 25;
+        }
+        _width = 25 + Math.random()*25;
+        _height = _width;
+        new Bubble(_x,_y,_width,_height);
+        this.protectTime = 30;
+    }},
+    {
+    name:"cognition",
+    onlyOnce:true,
+    storyMode:false,
+    x:425,
+    y:100,
+    width:75,
+    height:25,
+    judgeType:0,//GETIN,
+    judgeArg:0,
+    callback:function(){
+        global.storySchedule = 1;// 进入第一个剧情点
+        var _tarp = getTrap("gate01");
+        this.todolist.addTDL(_tarp,TDLItem.prototype.ITEM_TYPE.MOVETO_POS,{x:_tarp.x,y:_tarp.y+_tarp.height+100});
+        for (var i = global.BubbleList.length - 1; i >= 0; i--) {
+            global.BubbleList[i].distroy();
+        };
+    }},
+    {
+    name:"chapterEnd",
+    onlyOnce:true,
+    storyMode:false,
+    x:933,
+    y:505,
+    width:75,
+    height:25,
+    judgeType:0,//GETIN,
+    judgeArg:0,
+    callback:function(){
+
+    }}
+];
+Scene.prototype.trapData =  [
+    {
+        x:933,
+        y:505,
+        width:25,
+        height:250,
+        name:"gate01"
+    }
+]
+Scene.prototype.npc = [];
+ // [{x:500,y:280}];
 //地形方块
 function Block(x,y,width,height){
     this.id             = Block.prototype.id++;
@@ -91,18 +186,6 @@ Block.prototype.locateCSS = function(){
 Block.prototype.CheckCollision = function(collider){
     var isOutOfY = false;
     var isOutOfX = false;
-    var isStand  = collider.y==this.y+this.height;//主角是否踩着方块
-    if (isStand) {
-        if (collider==avatar) {
-            global.jumpTime = global.jumpTimeLimit;//恢复跳跃机会
-            if (global.btnUp==true) {
-                avatar.ActionJump();
-            };
-        }
-        else if (collider.speed.y<0){
-            collider.speed.x = 0;
-        }
-    }
     //主角在方块上方或下放
     if (collider.y>=this.y+this.height || collider.y+collider.height<this.y) isOutOfY = true;
     //主角在方块左侧或右侧
@@ -110,7 +193,31 @@ Block.prototype.CheckCollision = function(collider){
     if (collider.x+collider.speed.x+collider.movespeed.x+collider.width>this.x && collider.x+collider.speed.x+collider.movespeed.x<this.x+this.width &&
         collider.y+collider.speed.y+collider.height>this.y && collider.y+collider.speed.y<this.y+this.height)
     {
-        if (isOutOfY==false) {
+        if (isOutOfX==false) {
+            if (collider.speed.y>0){
+                collider.speed.y  = 0;
+                collider.y        = this.y-collider.height;
+            }
+            else if (collider.speed.y<=0)
+            {
+                collider.speed.y  = 0;
+                collider.y        = this.y+this.height;   
+            }
+        };
+        // 2014年10月17日 22:59:07 保证踩着上升的东西时不会判断为在方块里
+        var isStand  = collider.y==this.y+this.height;//主角是否踩着方块
+        if (isStand) {
+            if (collider==avatar) {
+                global.jumpTime = global.jumpTimeLimit;//恢复跳跃机会
+                if (global.btnUp==true) {
+                    avatar.ActionJump();
+                };
+            }
+            else if (collider.speed.y<0){
+                collider.speed.x = 0;
+            }
+        }
+        if (isOutOfY==false && isStand==false) {
             if (collider.speed.x+collider.movespeed.x>0){
                 collider.speed.x        = 0;
                 collider.movespeed.x    = 0;
@@ -121,17 +228,6 @@ Block.prototype.CheckCollision = function(collider){
                 collider.speed.x        = 0;
                 collider.movespeed.x    = 0;
                 collider.x        = this.x+this.width;   
-            }
-        };
-        if (isOutOfX==false) {
-            if (collider.speed.y>0){
-                collider.speed.y  = 0;
-                collider.y        = this.y-collider.height;
-            }
-            else if (collider.speed.y<0)
-            {
-                collider.speed.y  = 0;
-                collider.y        = this.y+this.height;   
             }
         };
     }
@@ -219,12 +315,13 @@ PoemBlock.prototype.id = 0;
 
 //事件方块
 //单词触发？锁定操作？
-function EventBlock(onlyOnce,storyMode,x,y,width,height,judgeType,judgeArg,callback){
+function EventBlock(onlyOnce,storyMode,x,y,width,height,judgeType,judgeArg,callback,name){
     this.id             = EventBlock.prototype.id++;
     this.x              = x;
     this.y              = y;
     this.width          = width;
     this.height         = height;
+    this.name           = name;
     this.jq             = null; //$对象
     //事件判断（方块统计）
     this.isBlockActive  = false;
@@ -237,6 +334,7 @@ function EventBlock(onlyOnce,storyMode,x,y,width,height,judgeType,judgeArg,callb
     this.judgeType      = judgeType;
     this.judgeArg       = judgeArg;
     this.callback       = callback;
+    this.protectTime    = 0;
     //携带的剧本
     this.todolist       = new ToDoList();
     this.init();
@@ -281,6 +379,10 @@ EventBlock.prototype.JUDGETYPE = {
  2·
 */
 EventBlock.prototype.checkEvent = function(){
+    this.protectTime --;
+    if (this.protectTime>0) {
+        return;
+    };
     if (this.isRun) {
         if (this.todolist.isDone) {
             this.reset();
@@ -295,7 +397,9 @@ EventBlock.prototype.checkEvent = function(){
         };
         break;
     case this.JUDGETYPE.STAY:
-        res = false;
+        if (this.isBlockActive) {
+            res = true;
+        };
         break;
     case this.JUDGETYPE.LEAVE:
         res = false;
@@ -317,7 +421,10 @@ EventBlock.prototype.reset      = function(){
     if (this.storyMode) {
         global.storyMode = false;
     };
-    if (!this.onlyOnce&&!this.isBlockActive) {
+    // 是否重置等待运行
+    if (!this.onlyOnce&&
+        (!this.isBlockActive&&this.judgeType==this.JUDGETYPE.GETIN ||
+         this.isBlockActive&&this.judgeType==this.JUDGETYPE.STAY)) {
         this.isRun  = false;
     };
 }
@@ -371,6 +478,122 @@ ItemFlag.prototype.setItem  = function(itemID){
     this.jq.css({ "background-image":"url(Image/rope.png)"
                     ,"background-repeat":"round"})
     }
+}
+function Bubble(x,y,width,height)
+{
+    this.x          = x;
+    this.y          = y;
+    this.width      = width;
+    this.height     = height;
+    this.speed      = {x:0,y:2.5};
+    this.power      = {x:0,y:0};
+    this.powerChangeProtect = 0;
+    global.BubbleList.push(this);
+    this.init();
+}
+Bubble.prototype.distroy = function() {
+    this.jq.remove();
+    for (var i = global.BubbleList.length - 1; i >= 0; i--) {
+        if(this ==global.BubbleList[i])
+            global.BubbleList.splice(i,1);
+    };
+};
+Bubble.prototype.init   = function(){
+    this.jq = $("<div class='bubble'></div>");
+    this.jq.css({
+        width:this.width,
+        height:this.height,
+        top:0,
+        left:0,
+        position:"absolute"
+    });
+    this.width = this.jq.width();
+    this.height = this.jq.height();
+    this.jq.appendTo($("#divmap"));
+    this.jq.object = this;
+    this.jq[0].object = this;
+    // 角色图像
+    this.jq.css({ "background-image":"url(Image/Bubble.png)"
+                    ,"background-repeat":"round"});
+}
+Bubble.prototype.CheckCollision = function(collider){
+    Block.prototype.CheckCollision.call(this,collider);
+};
+Bubble.prototype.locateCSS = function(){
+    //CSS坐标转换
+    var offset = this.jq.position();
+    var cssX,cssY;
+    cssX = this.x;
+    cssY = global.SCREEN_HEIGHT - this.y - this.height;
+    if (cssX!=parseInt(offset.left) || cssY!=parseInt(offset.top)) {
+        this.jq.css({left:cssX,top:cssY});
+    };
+}
+Bubble.prototype.run = function() {
+    this.x += this.speed.x;
+    this.y += this.speed.y;
+    this.locateCSS();
+    var isInWater = false;
+    for (var i = global.EventList.length - 1; i >= 0; i--) {
+        var target = global.EventList[i];
+        if (this.x+this.speed.x+this.speed.x+this.width>target.x && this.x+this.speed.x+this.speed.x<target.x+target.width &&
+            this.y+this.speed.y+this.height>target.y && this.y+this.speed.y<target.y+target.height)
+        {
+            if (target.name == "water") {
+                isInWater = true;
+                break;
+            };
+        }
+    };
+    if (isInWater==false) {
+        this.distroy();
+    };
+};
+function Trap(x,y,width,height,name)
+{
+    this.x      = x;
+    this.y      = y;
+    this.width  = width;
+    this.height = height;
+    this.name   = name;
+    this.div            = null; //$对象
+    this.init();
+    //将方块添加到全局变量中
+    global.BlockList.push(this);
+    global.TrapList.push(this);
+}
+Trap.prototype.init    = function(){
+    //初始化碰撞方块显示
+    this.jq = $("<div class='trap'></div>");
+    this.jq.css("backgroundColor","rgb(0,0,0)");
+    this.jq.css({
+        width:this.width+"px",
+        height:this.height+"px",
+        position:"absolute"
+    });
+    this.jq.appendTo($("#divmap"));
+    this.jq.object = this;
+    this.jq[0].object = this;
+    this.locateCSS();
+}
+Trap.prototype.locateCSS = function(){
+    //CSS坐标转换
+    var cssX,cssY;
+    cssX = this.x;
+    cssY = global.SCREEN_HEIGHT - this.y - this.height;
+    this.jq.css({left:cssX,top:cssY});
+    // this.jq.position({left:this.x,bottom:this.y});不支持bottom
+}
+Trap.prototype.CheckCollision = function(collider) {
+    Block.prototype.CheckCollision.call(this,collider);
+};
+getTrap = function(tName)
+{
+    for (var i = global.TrapList.length - 1; i >= 0; i--) {
+        var _trap = global.TrapList[i];
+        if (_trap.name==tName)
+            return _trap;
+    };
 }
 //其他方法
 // function showPoem(){
