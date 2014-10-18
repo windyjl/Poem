@@ -26,6 +26,8 @@ function Avatar(x,y,imgUrl,color,aiType){
     this.ghost          = null;     // $对象，一个表示对方真实想法的图像
     this.gPos           = {x:0,y:0};
     this.gStep          = 0;        // 计数器
+    // 气泡对话
+    this.bubble         = null;
 	// 逻辑变量
 	this.isOnAssociable = false;	// 不在指定关系层级范围内的想法 不显示
 	this.isOnScreen		= false;	// 离开屏幕范围的相符 不绘制
@@ -92,6 +94,18 @@ Avatar.prototype.init   = function(){
     this.gPos.x = this.x;
     this.gPos.y = this.y;
     this.ghost.appendTo(this.jq);
+    // 对话气泡
+    this.bubble = $("<div class='bubble'></div>");
+    this.bubble.css("backgroundColor","rgba(255,255,255,0.2)");
+    this.bubble.css({
+            width:"200px",
+            // height:"50px",
+        top:0,
+        left:0,
+        position:"absolute"
+    });
+    this.bubble.hide();
+    this.bubble.appendTo(this.jq);
     // this.img = $("<img></img>");
     // this.img.addClass("unselectable");
     // this.img.css({
@@ -163,13 +177,13 @@ Avatar.prototype.locateCSS = function(){
     var shake = {x:0,y:0};
     if (/*this.aiType==1&&*/this.AngryDirection!=null) {
         rad = this.AngryDirection;
-        if (dis<50+this.width) {
+        if (this.aiType==0 && dis<50+this.width) {
             shake.x = parseInt(Math.random()*5);
             shake.y = parseInt(Math.random()*5);
         };
     };
     var radius = 30;
-    if (dis<200 && this.gState == "angry") {
+    if (dis<200 && this.gState == "Excited") {
         radius += (200 - dis)/2;
     };
     this.gStep++;
@@ -178,8 +192,17 @@ Avatar.prototype.locateCSS = function(){
     this.gPos.x += shake.x;
     this.gPos.y += shake.y;
     this.ghost.css({left:this.gPos.x,top:this.gPos.y});
+    // 气泡定位
 
+    this.bubble.css({
+        left:(this.width - this.bubble.width())/2,
+        top:-50
+    })
 }
+Avatar.prototype.showWords = function(str) {
+    this.bubble.html(str);
+    this.bubble.show();
+};
 Avatar.prototype.RunAi  = function() {
     if (this.aiProtectTime>0) {
         this.aiProtectTime--;
@@ -188,7 +211,7 @@ Avatar.prototype.RunAi  = function() {
     if (this==avatar) {
         // 主角在热水中
         if (global.chapter!=0) {return};
-        var _poem = getPoem("火锅已经发烫</br>不能再呆下去了</br>");
+        var _poem = getPoem("水已经发烫</br>不能再呆下去了</br>");
         if (_poem.y+_poem.height>this.y) {
             this.ActionJump();
         };
@@ -225,22 +248,44 @@ Avatar.prototype.RunAi  = function() {
                 };
             }
             else if (getDis(avatar,this)>150) {
-                this.setExpression("peace");
+                // this.setExpression("peace");
+                this.hideExpression();
                 this.movespeed.x = 0;
             };
         }
         else if (this.aiPatience>0) {
+            this.movespeed.x = 0;
             this.setExpression("Shame");
-            this.aiPatience--;
+            if (getDis(avatar,this)<50+this.width) {
+                this.aiPatience--;  // 靠近时，消耗耐久
+            };
             if (this.AngryDirection==null) {
                 this.AngryDirection = Math.PI*0.25+Math.random()*Math.PI*0.5;
             };
             // 去完成表情抖动
-        };
+        }
+        else{
+            this.setExpression("Heart");
+            this.AngryDirection=null
+            // 伙伴属性，远了还会靠近
+            if (avatar.x<this.x) {
+                this.movespeed.x = -2.5;
+            }
+            else if (avatar.x>this.x) {
+                this.movespeed.x = 2.5;
+            };
+            var dis = getDis(avatar,this);
+            if (Math.abs(avatar.x-this.x)<75) {    // 最亲近距离
+                this.movespeed.x = 0;
+            }
+            else{
+                this.movespeed.x *= 2;
+            }
+        }
     }
     else if (this.aiType==1) {  //套乱
         if (getDis(avatar,this)<200) {  //烟雾距离
-            this.setExpression("angry");
+            this.setExpression("Excited");
             if (this.AngryDirection==null) {
                 this.AngryDirection = Math.PI*0.25+Math.random()*Math.PI*0.5;
             };
@@ -257,7 +302,7 @@ Avatar.prototype.RunAi  = function() {
             this.movespeed.x = 4;
         };
         var dis = getDis(avatar,this);
-        if (Math.abs(avatar.x-this.x)<250) {    // 保持距离
+        if (Math.abs(avatar.x-this.x)<250 || dis>500) {    // 保持距离
             this.movespeed.x = 0;
         }
         else if (dis<400) {                     // 减速距离
@@ -265,14 +310,35 @@ Avatar.prototype.RunAi  = function() {
         };
     }
     else if (this.aiType==2) {  //直接跟随
-
+        if (this.aiPatience>0) {
+            if (getDis(this,avatar)<this.width && global.flag.itemID == 0) {    // 拿着肥皂来的
+                this.aiPatience = 0;
+                this.setExpression("Soap_1");
+                global.storySchedule = 1;
+            };
+            return;
+        };
+        // 伙伴属性，远了还会靠近
+        if (avatar.x<this.x) {
+            this.movespeed.x = -2.5;
+        }
+        else if (avatar.x>this.x) {
+            this.movespeed.x = 2.5;
+        };
+        var dis = getDis(avatar,this);
+        if (Math.abs(avatar.x-this.x)<150) {    // 好友距离
+            this.movespeed.x = 0;
+        }
+        else{
+            this.movespeed.x *= 2;
+        }
     };
 }
 Avatar.prototype.CheckCollision = function(collider){
     if (collider.x+collider.width>=this.x && collider.x<=this.x+this.width &&
         collider.y+collider.height>=this.y && collider.y<=this.y+this.height)
     {
-        if (this.AngryDirection!=null) {
+        if (this.AngryDirection!=null && this.aiType == 1) {
             this.setExpression("boom");
             var speed = 20;
             this.speed.x = Math.cos(this.AngryDirection)*speed;
@@ -281,15 +347,34 @@ Avatar.prototype.CheckCollision = function(collider){
             this.aiProtectTime  = 60;
             this.movespeed.x    = 0;
         };
-
+        if (this.aiType==2) {
+            this.showWords("嘿！快丢肥皂给我!");
+        }
+        else if (this.aiType==1) {
+            this.showWords("伊——哈——");
+        }
+        else if (this.aiType==0) {
+            this.showWords("雅蠛蝶");
+        }
+    }
+    else {
+        this.bubble.hide();
     }
 }
 Avatar.prototype.setExpression = function(ExpName) {
     if (this.gState!=ExpName)
         this.ghost.css({"background-image":"url(Image/"+ExpName+".png)"
-                        ,"background-repeat":"round"});
+                        ,"background-repeat":"round"
+                        ,"backgroundColor":"rgba(255,255,255,0.0)"});
     this.gState = ExpName;
     this.ghost.show();
 };
+Avatar.prototype.hideExpression = function(ExpName) {
+    if (this.gState!=null){
+        this.ghost.hide();
+        this.gState = null;
+    }
+};
+
 //静态成员变量
 Avatar.prototype.id = 0;

@@ -90,7 +90,7 @@ Scene.prototype.showChapTitle = function(ChapName,callback) {
         left:(global.SCREEN_WIDTH - this.divTitle.width())/2
     });
     this.divTitle.hide();
-    this.divTitle.fadeIn(2000,callback);
+    this.divTitle.fadeIn(isCodeing?50:2000,callback);
 };
 //静态成员变量
 Scene.prototype.id = 0;
@@ -419,6 +419,21 @@ EventBlock.prototype.init    = function(){
     this.jq.object = this;
     this.jq[0].object = this;
     this.locateCSS();
+
+    // 特例 肥皂事件
+    if (this.name == "soap") {
+        this.jq.css({"background-image":"url(Image/Soap_1.png)"
+                        ,"background-repeat":"round"
+                        ,"backgroundColor":"rgba(255,255,255,0.0)"});
+    };
+}
+getEvent = function(tName){
+    for (var i = 0; i < global.EventList.length; i++) {
+        var _e = global.EventList[i];
+        if (_e.name == tName) {
+            return _e;
+        };
+    };
 }
 EventBlock.prototype.distroy = function() {
     this.jq.remove();
@@ -549,7 +564,7 @@ ItemFlag.prototype.setItem  = function(itemID){
     switch(itemID)
     {
     case 0:
-    this.jq.css({ "background-image":"url(Image/rope.png)"
+    this.jq.css({ "background-image":"url(Image/Soap_1.png)"
                     ,"background-repeat":"round"})
     }
 }

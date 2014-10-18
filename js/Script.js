@@ -170,10 +170,10 @@ moveXtoTargetPos    = function(self,target,unitDis){
     if (Math.abs(self.x-target.x)<5) {
         self.x = target.x;
     }
-    else if (target.x-self.x<0) {
+    else if (target.x-self.x>0) {
         self.x += 5  
     }
-    else if (target.x-self.x>0) {
+    else if (target.x-self.x<0) {
         self.x -= 5;
     };
 }
@@ -181,10 +181,10 @@ moveYtoTargetPos    = function(self,target,unitDis){
     if (Math.abs(self.y-target.y)<5) {
         self.y = target.y;
     }
-    else if (target.y-self.y<0) {
+    else if (target.y-self.y>0) {
         self.y += 5  
     }
-    else if (target.y-self.y>0) {
+    else if (target.y-self.y<0) {
         self.y -= 5;
     };
 }

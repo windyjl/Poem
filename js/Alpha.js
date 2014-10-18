@@ -1,4 +1,5 @@
 ﻿// var $ = jQuery.noConflict();
+var isCodeing = true;
 var $id = function(id) { return document.getElementById(id); };
 var FPS = 60;
 var avatar  = null;
@@ -41,6 +42,7 @@ var global = {
     speedx:2.5,
     lockStand:true,     //每次检测到，将组织横向碰撞计算下移速度
     storySchedule:0,
+    falildBubble:false,
     chapter:0,
     // 操作限制
     jumpTimeLimit:2,
@@ -139,6 +141,7 @@ function init(){
     var _lvData = levelData[global.chapter];
     avatar = new Avatar(_lvData.avatarPoint.x,_lvData.avatarPoint.y,"Image/frog.png");
     avatar.init();
+    avatar.jq.css("z-index",10);
     // new Bubble(50,50,25,25);
     //初始化游戏道具
     global.flag = new ItemFlag();
@@ -147,7 +150,7 @@ function init(){
 
     // 显示第一章
     scene.showChapTitle(levelData[global.chapter].title,function(){
-        $("#curtain").fadeOut(2000);
+        $("#curtain").fadeOut(isCodeing?50:2000);
         scene.init(global.chapter);   //场景的诗影响了测试按钮的生成-position:relative
         run();
     })
@@ -254,18 +257,26 @@ var initUI = function(){
     });
     $('canvas').css({position:"fixed"});
     drawbg();
-    tBtn("新建方块",function(){new Block(0,global.BlockList.length*50,100,20)});
-    tBtn("记录方块",function(){
-        console.log("正在输出当前关卡的")
-        for (var i = 0; i < global.BlockList.length; i++) {
-            var blk = global.BlockList[i];
-            console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height);
-        };
-        for (var i = 0; i < global.PoemsList.length; i++) {
-            var blk = global.PoemsList[i];
-            console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height);
-        };
-    });
+    if (isCodeing) {
+        tBtn("新建方块",function(){new Block(avatar.x,avatar.y+25,100,25)});
+        tBtn("新建诗句",function(){new PoemBlock(avatar.x,avatar.y+25,100,25,0,"唯能呈祥？")});
+        tBtn("新建机关",function(){new Trap(avatar.x,avatar.y+25,100,25,"trap")});
+        tBtn("新建事件",function(){new EventBlock(false,true,avatar.x,avatar.y+25,50,25,EventBlock.prototype.JUDGETYPE.GETIN,0,function(){})});
+        tBtn("记录方块",function(){
+            console.log("正在输出当前关卡的")
+            for (var i = 0; i < global.BlockList.length; i++) {
+                var blk = global.BlockList[i];
+                console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height);
+                if (getObjectClass(blk)=='Trap') {
+                    console.log(blk.name);
+                };
+            };
+            for (var i = 0; i < global.PoemsList.length; i++) {
+                var blk = global.PoemsList[i];
+                console.log(getObjectClass(blk)+":"+blk.x+","+blk.y+","+blk.width+","+blk.height+","+blk.ps);
+            };
+        });
+    };
 }
 //临时功能
 var hideAll = function(e,quantity){
@@ -324,7 +335,7 @@ var run = function()
     setTimeout(_run, 1000.0/FPS);
 };
 var runBubble = function  () {
-    if (global.storySchedule!=0) 
+    if (global.falildBubble==true) 
         return;
     for (var i = global.BubbleList.length - 1; i >= 0; i--) {
         var _bbl = global.BubbleList[i];
@@ -374,7 +385,7 @@ var physicalMove = function()
         avatar.movespeed.x = global.dctLeftOrRight * global.speedx;
     };
     // 人与气泡
-    for (var i = global.BubbleList.length - 1; i >= 0&& global.storySchedule==0 ; i--) {
+    for (var i = global.BubbleList.length - 1; i >= 0&& global.falildBubble==false ; i--) {
         global.BubbleList[i].CheckCollision(avatar);
     };
     //诗集检查
