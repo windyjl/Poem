@@ -1,5 +1,5 @@
 ﻿// var $ = jQuery.noConflict();
-var isCodeing = true;
+var isCodeing = false;
 var $id = function(id) { return document.getElementById(id); };
 var FPS = 60;
 var avatar  = null;
